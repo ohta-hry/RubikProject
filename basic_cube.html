@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js 基本立方体</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        
+        #container {
+            text-align: center;
+        }
+        
+        #canvas-container {
+            display: inline-block;
+            border: 2px solid #333;
+            margin: 20px 0;
+            background-color: white;
+        }
+        
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 5px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>Three.js 基本立方体</h1>
+        
+        <!-- テスト用ボタン -->
+        <div>
+            <button onclick="rotateCube()">立方体を回転</button>
+            <button onclick="resetCube()">回転リセット</button>
+        </div>
+        
+        <!-- Three.js用のcanvas -->
+        <div id="canvas-container"></div>
+        
+        <p>マウスでドラッグして立方体を回転させることができます</p>
+    </div>
+
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <script>
+        // Three.jsの基本要素を格納する変数
+        let scene, camera, renderer, cubeGroup;
+        let isRotating = false;
+        
+        // ルービックキューブの標準的な面の色（明るく鮮やかに調整）
+        const cubeColors = {
+            front: 0xFFFFFF,   // 白（前面）
+            back:  0xFFDD00,   // 明るい黄（後面）
+            right: 0xFF9900,   // 明るいオレンジ（左面）
+            left:  0xFF3333,   // 明るい赤（右面）
+            top:   0x00DD00,   // 明るい緑（上面）
+            bottom:0x0088FF,   // 明るい青（下面）
+            inner: 0x333333    // 内側の面（濃いグレー）
+        };
+        
+        // マウス操作用の変数
+        let mouseX = 0, mouseY = 0;
+        let isMouseDown = false;
+        
+        // 種類別にキューブを管理するオブジェクト
+        const categorizedCubes = {
+            corners: [],
+            edges: [],
+            centers: []
+        };
+        
+        // キューブの種類を判定するヘルパー関数
+        function getCubeType(x, y, z) {
+            const offsetSum = Math.abs(x - 1) + Math.abs(y - 1) + Math.abs(z - 1);
+            switch (offsetSum) {
+                case 3: return 'corner';
+                case 2: return 'edge';
+                case 1: return 'center';
+                case 0: return 'core';
+                default: return 'unknown';
+            }
+        }
+        
+        // SmallCubeクラス
+        class SmallCube {
+            constructor(x, y, z) {
+                this.group = new THREE.Group();
+                this.gridPosition = { x, y, z };
+                
+                const spacing = 1.0;
+                this.group.position.set(
+                    (x - 1) * spacing,
+                    (y - 1) * spacing,
+                    (z - 1) * spacing
+                );
+                
+                this._createVisuals();
+            }
+            
+            _createVisuals() {
+                // 黒い立方体のベース
+                const geometry = new THREE.BoxGeometry(1, 1, 1);
+                const baseMaterial = new THREE.MeshLambertMaterial({ color: 0x222222 });
+                const baseCube = new THREE.Mesh(geometry, baseMaterial);
+                baseCube.castShadow = true;
+                baseCube.receiveShadow = true;
+                this.group.add(baseCube);
+                
+                // 各面に色付きパネルを追加
+                const facePositions = [
+                    new THREE.Vector3(0.501, 0, 0),    // 右面
+                    new THREE.Vector3(-0.501, 0, 0),   // 左面
+                    new THREE.Vector3(0, 0.501, 0),    // 上面
+                    new THREE.Vector3(0, -0.501, 0),   // 下面
+                    new THREE.Vector3(0, 0, 0.501),    // 前面
+                    new THREE.Vector3(0, 0, -0.501)    // 後面
+                ];
+                
+                const faceRotations = [
+                    new THREE.Euler(0, Math.PI/2, 0),     // 右面
+                    new THREE.Euler(0, -Math.PI/2, 0),    // 左面
+                    new THREE.Euler(-Math.PI/2, 0, 0),    // 上面
+                    new THREE.Euler(Math.PI/2, 0, 0),     // 下面
+                    new THREE.Euler(0, 0, 0),             // 前面
+                    new THREE.Euler(0, Math.PI, 0)        // 後面
+                ];
+                
+                for (let faceIndex = 0; faceIndex < 6; faceIndex++) {
+                    const color = this._getFaceColor(faceIndex);
+                    if (color !== null) {
+                        const panel = this._createColorPanel(
+                            color,
+                            facePositions[faceIndex],
+                            faceRotations[faceIndex]
+                        );
+                        this.group.add(panel);
+                    }
+                }
+            }
+            
+            _getFaceColor(faceIndex) {
+                const { x, y, z } = this.gridPosition;
+                
+                const isRightFace = (x === 2 && faceIndex === 0);
+                const isLeftFace = (x === 0 && faceIndex === 1);
+                const isTopFace = (y === 2 && faceIndex === 2);
+                const isBottomFace = (y === 0 && faceIndex === 3);
+                const isFrontFace = (z === 2 && faceIndex === 4);
+                const isBackFace = (z === 0 && faceIndex === 5);
+                
+                if (isRightFace) return cubeColors.right;
+                if (isLeftFace) return cubeColors.left;
+                if (isTopFace) return cubeColors.top;
+                if (isBottomFace) return cubeColors.bottom;
+                if (isFrontFace) return cubeColors.front;
+                if (isBackFace) return cubeColors.back;
+                
+                return null;
+            }
+            
+            _createColorPanel(color, position, rotation) {
+                const panelGeometry = new THREE.PlaneGeometry(0.85, 0.85);
+                const panelMaterial = new THREE.MeshLambertMaterial({
+                    color: color,
+                    emissive: new THREE.Color(color).multiplyScalar(0.1)
+                });
+                
+                const panel = new THREE.Mesh(panelGeometry, panelMaterial);
+                panel.position.copy(position);
+                panel.rotation.copy(rotation);
+                
+                return panel;
+            }
+        }
+        
+        // 初期化関数
+        function init() {
+            // 1. シーンの作成（3D空間）
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf0f0f0);
+            
+            // 2. カメラの作成（視点）
+            camera = new THREE.PerspectiveCamera(
+                75,  // 視野角
+                800 / 600,  // アスペクト比
+                0.1,  // 近クリップ面
+                1000  // 遠クリップ面
+            );
+            
+            // 3. レンダラーの作成（描画エンジン）
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(800, 600);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            
+            // canvasをHTMLに追加
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+            
+            // 4. 立方体の作成
+            createCube();
+            
+            // 5. ライトの設定
+            setupLights();
+            
+            // 6. カメラの位置設定
+            camera.position.set(3, 3, 5);
+            camera.lookAt(0, 0, 0);
+            
+            // 7. マウスイベントの設定
+            setupMouseControls();
+            
+            // 8. 描画開始
+            animate();
+        }
+        
+        // 立方体を作成する関数
+        function createCube() {
+            // グループを作成（全体のルービックキューブ）
+            cubeGroup = new THREE.Group();
+            
+            // 3x3x3のループでキューブを生成・分類
+            for (let x = 0; x < 3; x++) {
+                for (let y = 0; y < 3; y++) {
+                    for (let z = 0; z < 3; z++) {
+                        // 中心にあって見えないコアキューブはスキップ
+                        if (x === 1 && y === 1 && z === 1) {
+                            continue;
+                        }
+                        
+                        const cube = new SmallCube(x, y, z);
+                        const type = getCubeType(x, y, z);
+                        
+                        // 判定された種類に応じて、適切な配列に格納
+                        switch (type) {
+                            case 'corner':
+                                categorizedCubes.corners.push(cube);
+                                break;
+                            case 'edge':
+                                categorizedCubes.edges.push(cube);
+                                break;
+                            case 'center':
+                                categorizedCubes.centers.push(cube);
+                                break;
+                        }
+                        
+                        // 見た目はcubeGroupにまとめて追加
+                        cubeGroup.add(cube.group);
+                    }
+                }
+            }
+            
+            // グループをシーンに追加
+            scene.add(cubeGroup);
+            
+            // デバッグ情報をコンソールに出力
+            console.log("コーナーキューブの数:", categorizedCubes.corners.length); // 8
+            console.log("エッジキューブの数:", categorizedCubes.edges.length);     // 12
+            console.log("センターキューブの数:", categorizedCubes.centers.length);   // 6
+        }
+        
+        // ライトの設定
+        function setupLights() {
+            // 環境光を明るくして全体的に見やすく
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+            
+            // 平行光源を弱くして影を薄く
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.4);
+            directionalLight.position.set(5, 8, 5);
+            directionalLight.castShadow = true;
+            
+            // 影を薄く設定
+            directionalLight.shadow.mapSize.width = 1024;
+            directionalLight.shadow.mapSize.height = 1024;
+            directionalLight.shadow.camera.near = 0.5;
+            directionalLight.shadow.camera.far = 50;
+            directionalLight.shadow.bias = -0.0001;
+            
+            scene.add(directionalLight);
+            
+            // 補助光を追加（影を更に薄くするため）
+            const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
+            fillLight.position.set(-5, -3, -5);
+            scene.add(fillLight);
+        }
+        
+        // マウス操作の設定
+        function setupMouseControls() {
+            const canvas = renderer.domElement;
+            
+            canvas.addEventListener('mousedown', (event) => {
+                isMouseDown = true;
+                mouseX = event.clientX;
+                mouseY = event.clientY;
+            });
+            
+            canvas.addEventListener('mousemove', (event) => {
+                if (!isMouseDown) return;
+                
+                const deltaX = event.clientX - mouseX;
+                const deltaY = event.clientY - mouseY;
+                
+                // 回転方向を元に戻す
+                cubeGroup.rotation.y += deltaX * 0.01;
+                cubeGroup.rotation.x += deltaY * 0.01;
+                
+                mouseX = event.clientX;
+                mouseY = event.clientY;
+            });
+            
+            canvas.addEventListener('mouseup', () => {
+                isMouseDown = false;
+            });
+            
+            canvas.addEventListener('mouseleave', () => {
+                isMouseDown = false;
+            });
+        }
+        
+        // アニメーションループ
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // 自動回転が有効な場合
+            if (isRotating) {
+                cubeGroup.rotation.x += 0.01;
+                cubeGroup.rotation.y += 0.01;
+            }
+            
+            // 描画
+            renderer.render(scene, camera);
+        }
+        
+        // ボタンの機能
+        function rotateCube() {
+            isRotating = !isRotating;
+            const button = event.target;
+            button.textContent = isRotating ? '回転停止' : '立方体を回転';
+        }
+        
+        function resetCube() {
+            cubeGroup.rotation.x = 0;
+            cubeGroup.rotation.y = 0;
+            cubeGroup.rotation.z = 0;
+            isRotating = false;
+            document.querySelector('button').textContent = '立方体を回転';
+        }
+        
+        function changeCubeColor() {
+            // 使用しない関数（削除予定）
+        }
+        
+        // ページ読み込み完了後に初期化実行
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
