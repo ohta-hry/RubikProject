@@ -1,7 +1,6 @@
-import * as THREE from 'three';
-import { SceneManager } from './SceneManager';
-import { CubeManager } from '../components/CubeManager';
-import { MouseControls } from '../controls/MouseControls';
+import { SceneManager } from './SceneManager.js';
+import { CubeManager } from '../components/CubeManager.js';
+import { MouseControls } from '../controls/MouseControls.js';
 
 export class App {
     constructor() {

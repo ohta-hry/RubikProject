@@ -1,6 +1,5 @@
-import * as THREE from 'three';
-import { SmallCube } from './SmallCube';
-import { getCubeType } from '../utils/Helpers';
+import { SmallCube } from './SmallCube.js';
+import { getCubeType } from '../utils/Helpers.js';
 
 export class CubeManager {
     constructor() {

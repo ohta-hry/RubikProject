@@ -1,8 +1,7 @@
-import * as THREE from 'three';
-import { CUBE_COLORS } from '../utils/Constants';
+import { CUBE_COLORS } from '../utils/Constants.js';
 
 // SmallCubeクラス
-class SmallCube {
+export class SmallCube {
     constructor(x, y, z) {
         this.group = new THREE.Group();
         this.gridPosition = { x, y, z };
@@ -68,12 +67,12 @@ class SmallCube {
         const isFrontFace = (z === 2 && faceIndex === 4);
         const isBackFace = (z === 0 && faceIndex === 5);
         
-        if (isRightFace) return cubeColors.right;
-        if (isLeftFace) return cubeColors.left;
-        if (isTopFace) return cubeColors.top;
-        if (isBottomFace) return cubeColors.bottom;
-        if (isFrontFace) return cubeColors.front;
-        if (isBackFace) return cubeColors.back;
+        if (isRightFace) return CUBE_COLORS.right;
+        if (isLeftFace) return CUBE_COLORS.left;
+        if (isTopFace) return CUBE_COLORS.top;
+        if (isBottomFace) return CUBE_COLORS.bottom;
+        if (isFrontFace) return CUBE_COLORS.front;
+        if (isBackFace) return CUBE_COLORS.back;
         
         return null;
     }
