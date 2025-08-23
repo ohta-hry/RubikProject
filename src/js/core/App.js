@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import { SceneManager } from './SceneManager.js';
 import { CubeManager } from '../components/CubeManager.js';
 import { MouseControls } from '../controls/MouseControls.js';
@@ -62,7 +63,7 @@ export class App {
         requestAnimationFrame(animate);
         
         // 自動回転が有効な場合
-        if (isRotating) {
+        if (this.isRotating) {
             cubeGroup.rotation.x += 0.01;
             cubeGroup.rotation.y += 0.01;
         }

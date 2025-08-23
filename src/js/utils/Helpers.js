@@ -1,3 +1,5 @@
+import { CUBE_TYPES } from '../utils/Constants.js';
+
 export function getCubeType(x, y, z) {
     const offsetSum = Math.abs(x - 1) + Math.abs(y - 1) + Math.abs(z - 1);
     switch (offsetSum) {

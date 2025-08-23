@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 import { SmallCube } from './SmallCube.js';
 import { getCubeType } from '../utils/Helpers.js';
 
@@ -13,7 +15,7 @@ export class CubeManager {
     
     createCube() {
             // グループを作成（全体のルービックキューブ）
-            cubeGroup = new THREE.Group();
+            this.cubeGroup = new THREE.Group();
             
             // 3x3x3のループでキューブを生成・分類
             for (let x = 0; x < 3; x++) {
@@ -30,28 +32,28 @@ export class CubeManager {
                         // 判定された種類に応じて、適切な配列に格納
                         switch (type) {
                             case 'corner':
-                                categorizedCubes.corners.push(cube);
+                                this.categorizedCubes.corners.push(cube);
                                 break;
                             case 'edge':
-                                categorizedCubes.edges.push(cube);
+                                this.categorizedCubes.edges.push(cube);
                                 break;
                             case 'center':
-                                categorizedCubes.centers.push(cube);
+                                this.categorizedCubes.centers.push(cube);
                                 break;
                         }
                         
                         // 見た目はcubeGroupにまとめて追加
-                        cubeGroup.add(cube.group);
+                        this.cubeGroup.add(cube.group);
                     }
                 }
             }
             
             // グループをシーンに追加
-            scene.add(cubeGroup);
+            scene.add(this.cubeGroup);
             
             // デバッグ情報をコンソールに出力
-            console.log("コーナーキューブの数:", categorizedCubes.corners.length); // 8
-            console.log("エッジキューブの数:", categorizedCubes.edges.length);     // 12
-            console.log("センターキューブの数:", categorizedCubes.centers.length);   // 6
+            console.log("コーナーキューブの数:", this.categorizedCubes.corners.length); // 8
+            console.log("エッジキューブの数:", this.categorizedCubes.edges.length);     // 12
+            console.log("センターキューブの数:", this.categorizedCubes.centers.length);   // 6
         }
 }

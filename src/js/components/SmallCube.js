@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import { CUBE_COLORS } from '../utils/Constants.js';
 
 // SmallCubeクラス
