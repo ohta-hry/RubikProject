@@ -48,9 +48,6 @@ export class CubeManager {
                 }
             }
             
-            // グループをシーンに追加
-            scene.add(this.cubeGroup);
-            
             // デバッグ情報をコンソールに出力
             console.log("コーナーキューブの数:", this.categorizedCubes.corners.length); // 8
             console.log("エッジキューブの数:", this.categorizedCubes.edges.length);     // 12

@@ -31,4 +31,12 @@ export class SceneManager {
         this.scene.add(fillLight);
     }
     
+    addObject(object) {
+        this.scene.add(object);
+    }
+    
+    removeObject(object) {
+        this.scene.remove(object);
+    }
+
 }
