@@ -86,6 +86,8 @@ export class SmallCube {
         });
         
         const panel = new THREE.Mesh(panelGeometry, panelMaterial);
+        panel.castShadow = true;    // 影を投射
+        panel.receiveShadow = true; // 影を受け取る
         panel.position.copy(position);
         panel.rotation.copy(rotation);
         
