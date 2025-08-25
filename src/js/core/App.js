@@ -1,9 +1,11 @@
 import * as THREE from 'three';
-import { SceneManager } from './SceneManager';
-import { CubeManager } from '../components/CubeManager';
-import { MouseControls } from '../controls/MouseControls';
+import { SceneManager } from './SceneManager.js';
+import { CubeManager } from '../components/CubeManager.js';
+import { MouseControls } from '../controls/MouseControls.js';
 
 export class App {
+
+    
     constructor() {
         this.isRotating = false;
         this.init();
@@ -59,16 +61,15 @@ export class App {
     }
     
     // アニメーションループ
-    animate() {
-        requestAnimationFrame(animate);
+    animate = () => {
+        requestAnimationFrame(this.animate);
         
-        // 自動回転が有効な場合
-        if (isRotating) {
-            cubeGroup.rotation.x += 0.01;
-            cubeGroup.rotation.y += 0.01;
+        if (this.isRotating) {
+            this.cubeManager.cubeGroup.rotation.x += 0.01;
+            this.cubeManager.cubeGroup.rotation.y += 0.01;
         }
         
-        // 描画
-        renderer.render(scene, camera);
+        this.renderer.render(this.sceneManager.scene, this.camera);
     }
+    
 }

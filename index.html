@@ -55,8 +55,13 @@
         <p>マウスでドラッグして立方体を回転させることができます</p>
     </div>
 
-    <!-- Three.js CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.175.0/build/three.module.js"
+            }
+        }
+    </script>
     
     <!-- モジュールの読み込み -->
     <script type="module" src="./src/js/main.js"></script>

@@ -1,7 +1,7 @@
 export class MouseControls {
-    constructor(renderer, cubeGroup) {
-        this.renderer = renderer;
-        this.cubeGroup = cubeGroup;
+    constructor(renderer_, cubeGroup_) {
+        this.renderer = renderer_;
+        this.cubeGroup = cubeGroup_;
         this.isMouseDown = false;
         this.mouseX = 0;
         this.mouseY = 0;
@@ -10,34 +10,34 @@ export class MouseControls {
     }
     
     init() {
-        const canvas = renderer.domElement;
+        const canvas = this.renderer.domElement;
         
         canvas.addEventListener('mousedown', (event) => {
-            isMouseDown = true;
-            mouseX = event.clientX;
-            mouseY = event.clientY;
+            this.isMouseDown = true;
+            this.mouseX = event.clientX;
+            this.mouseY = event.clientY;
         });
         
         canvas.addEventListener('mousemove', (event) => {
-            if (!isMouseDown) return;
+            if (!this.isMouseDown) return;
             
-            const deltaX = event.clientX - mouseX;
-            const deltaY = event.clientY - mouseY;
+            const deltaX = event.clientX - this.mouseX;
+            const deltaY = event.clientY - this.mouseY;
             
             // 回転方向を元に戻す
-            cubeGroup.rotation.y += deltaX * 0.01;
-            cubeGroup.rotation.x += deltaY * 0.01;
+            this.cubeGroup.rotation.y += deltaX * 0.01;
+            this.cubeGroup.rotation.x += deltaY * 0.01;
             
-            mouseX = event.clientX;
-            mouseY = event.clientY;
+            this.mouseX = event.clientX;
+            this.mouseY = event.clientY;
         });
         
         canvas.addEventListener('mouseup', () => {
-            isMouseDown = false;
+            this.isMouseDown = false;
         });
         
         canvas.addEventListener('mouseleave', () => {
-            isMouseDown = false;
+            this.isMouseDown = false;
         });
     }
 }
