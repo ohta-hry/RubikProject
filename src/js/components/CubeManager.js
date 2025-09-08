@@ -43,7 +43,7 @@ export class CubeManager {
                         }
                         
                         // 見た目はcubeGroupにまとめて追加
-                        this.cubeGroup.add(cube.group);
+                        cube._addToParent(this.cubeGroup);
                     }
                 }
             }

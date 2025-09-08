@@ -4,14 +4,14 @@ import { CUBE_COLORS, BASE_CUBE_COLOR, CUBE_SPACING,
 
 // SmallCubeクラス
 export class SmallCube {
-    group;
-    gridPosition;
+    #group;
+    #gridPosition;
     
     constructor(x, y, z) {
-        this.group = new THREE.Group();
-        this.gridPosition = { x, y, z };
+        this.#group = new THREE.Group();
+        this.#gridPosition = { x, y, z };
         
-        this.group.position.set(
+        this.#group.position.set(
             (x - 1) * CUBE_SPACING,
             (y - 1) * CUBE_SPACING,
             (z - 1) * CUBE_SPACING
@@ -27,7 +27,7 @@ export class SmallCube {
         const baseCube = new THREE.Mesh(geometry, baseMaterial);
         baseCube.castShadow = true;
         baseCube.receiveShadow = true;
-        this.group.add(baseCube);
+        this.#group.add(baseCube);
         
         
         for (let faceIndex = 0; faceIndex < 6; faceIndex++) {
@@ -38,13 +38,13 @@ export class SmallCube {
                     PANEL_POSITIONS[faceIndex],
                     PANEL_ROTATIONS[faceIndex]
                 );
-                this.group.add(panel);
+                this.#group.add(panel);
             }
         }
     }
     
     #getFaceColor(faceIndex) {
-        const { x, y, z } = this.gridPosition;
+        const { x, y, z } = this.#gridPosition;
         
         const isRightFace = (x === 2 && faceIndex === 0);
         const isLeftFace = (x === 0 && faceIndex === 1);
@@ -79,14 +79,21 @@ export class SmallCube {
         return panel;
     }
 
+
+
+    _addToParent(parentGroup) {
+        parentGroup.add(this.#group);
+        return this; // メソッドチェーン可能に
+    }
+
     _setPosition(x, y, z, q) {
-        this.gridPosition = { x, y, z };
-        this.group.position.set(
+        this.#gridPosition = { x, y, z };
+        this.#group.position.set(
             (x - 1) * CUBE_SPACING,
             (y - 1) * CUBE_SPACING,
             (z - 1) * CUBE_SPACING
         );
-        this.group.quaternion.copy(q);
+        this.#group.quaternion.copy(q);
 
     }
 }
