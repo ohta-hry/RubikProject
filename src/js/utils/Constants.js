@@ -10,6 +10,31 @@ export const CUBE_COLORS = {
     inner: 0x333333    // 内側の面（濃いグレー）
 };
 
+export const BASE_CUBE_COLOR = 0x222222; // 黒い立方体のベース色
+
+export const CUBE_SPACING = 1.0;
+export const PANEL_SIZE = 0.85;          // パネルのサイズ(0.9~0.85)
+
+export const PANEL_POSITIONS = [
+    new THREE.Vector3(0.501, 0, 0),    // 右面パネル位置
+    new THREE.Vector3(-0.501, 0, 0),   // 左面パネル位置
+    new THREE.Vector3(0, 0.501, 0),    // 上面パネル位置
+    new THREE.Vector3(0, -0.501, 0),   // 下面パネル位置
+    new THREE.Vector3(0, 0, 0.501),    // 前面パネル位置
+    new THREE.Vector3(0, 0, -0.501)    // 後面パネル位置
+];
+
+export const PANEL_ROTATIONS = [
+    new THREE.Euler(0, Math.PI/2, 0),     // 右面パネル回転
+    new THREE.Euler(0, -Math.PI/2, 0),    // 左面パネル回転
+    new THREE.Euler(-Math.PI/2, 0, 0),    // 上面パネル回転
+    new THREE.Euler(Math.PI/2, 0, 0),     // 下面パネル回転
+    new THREE.Euler(0, 0, 0),             // 前面パネル回転
+    new THREE.Euler(0, Math.PI, 0)        // 後面パネル回転
+];
+
+export const PANEL_EMISSIVE_INTENSITY = 0.1;
+
 export const CUBE_TYPES = {
     CORNER: 'corner',
     EDGE: 'edge',
