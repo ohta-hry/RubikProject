@@ -5,7 +5,7 @@ import { getCubeType } from '../utils/Helpers.js';
 
 export class CubeManager {
     constructor() {
-        this.cubeGroup = new THREE.Group();
+        this.cubes = [];
         this.categorizedCubes = {
             corners: [],
             edges: [],
@@ -14,8 +14,6 @@ export class CubeManager {
     }
     
     createCube() {
-            // グループを作成（全体のルービックキューブ）
-            this.cubeGroup = new THREE.Group();
             
             // 3x3x3のループでキューブを生成・分類
             for (let x = 0; x < 3; x++) {
@@ -31,19 +29,12 @@ export class CubeManager {
                         
                         // 判定された種類に応じて、適切な配列に格納
                         switch (type) {
-                            case 'corner':
-                                this.categorizedCubes.corners.push(cube);
-                                break;
-                            case 'edge':
-                                this.categorizedCubes.edges.push(cube);
-                                break;
-                            case 'center':
-                                this.categorizedCubes.centers.push(cube);
-                                break;
+                            case 'corner': this.categorizedCubes.corners.push(cube); break;
+                            case 'edge'  : this.categorizedCubes.edges.push(cube); break;
+                            case 'center': this.categorizedCubes.centers.push(cube); break;
                         }
-                        
-                        // 見た目はcubeGroupにまとめて追加
-                        cube._addToParent(this.cubeGroup);
+                    
+                        this.cubes.push(cube); 
                     }
                 }
             }
@@ -53,4 +44,19 @@ export class CubeManager {
             console.log("エッジキューブの数:", this.categorizedCubes.edges.length);     // 12
             console.log("センターキューブの数:", this.categorizedCubes.centers.length);   // 6
         }
+    
+    // 新しいメソッド: 全キューブをシーンに追加
+    addAllCubesToScene(scene) {
+        this.cubes.forEach(cube => {
+            scene.add(cube.group);
+        });
+    }
+    
+    // 新しいメソッド: 特定の条件のキューブを取得
+    getCubesByCondition(conditionFn) {
+        return this.cubes.filter(conditionFn);
+    }
 }
+
+
+

@@ -86,6 +86,10 @@ export class SmallCube {
         return this; // メソッドチェーン可能に
     }
 
+    get group() {
+        return this.#group;
+    }
+
     _setPosition(x, y, z, q) {
         this.#gridPosition = { x, y, z };
         this.#group.position.set(

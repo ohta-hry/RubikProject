@@ -4,7 +4,6 @@ import { CubeManager } from '../components/CubeManager.js';
 import { CameraController } from '../controls/CameraControls.js';
 
 export class App {
-
     
     constructor() {
         this.isRotating = false;
@@ -26,7 +25,7 @@ export class App {
         
         // キューブ作成
         this.cubeManager.createCube();
-        this.sceneManager.scene.add(this.cubeManager.cubeGroup);
+        this.cubeManager.addAllCubesToScene(this.sceneManager.scene);
 
         // アニメーション開始
         this.animate();
@@ -63,13 +62,7 @@ export class App {
     animate = () => {
         requestAnimationFrame(this.animate);
         
-        if (this.isRotating) {
-            this.cubeManager.cubeGroup.rotation.x += 0.01;
-            this.cubeManager.cubeGroup.rotation.y += 0.01;
-        }
-
         this.cameraController.update();
-
         this.renderer.render(this.sceneManager.scene, this.camera);
     }
     
