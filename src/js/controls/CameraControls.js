@@ -1,19 +1,15 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'OrbitControls';
+import { CAMERA_CONFIG } from '../utils/Constants.js';
 
 export class CameraController {
     constructor(camera, rendererDomElement, options = {}) {
         this.camera = camera;
         this.domElement = rendererDomElement;
         
+        // デフォルト設定とオプションをマージ
         this.settings = {
-            enableDamping: true,
-            dampingFactor: 0.05,
-            rotateSpeed: 1.0,
-            minDistance: 3,
-            maxDistance: 15,
-            initialPosition: new THREE.Vector3(5, 5, 5),
-            target: new THREE.Vector3(0, 0, 0),
+            ...CAMERA_CONFIG.DEFAULT,
             ...options
         };
         
@@ -22,16 +18,33 @@ export class CameraController {
     }
     
     init() {
-        this.camera.position.copy(this.settings.initialPosition);
-        this.camera.lookAt(this.settings.target);
+        // Vector3に変換
+        const initialPosition = new THREE.Vector3(
+            this.settings.INITIAL_POSITION.x,
+            this.settings.INITIAL_POSITION.y,
+            this.settings.INITIAL_POSITION.z
+        );
+        
+        const target = new THREE.Vector3(
+            this.settings.TARGET.x,
+            this.settings.TARGET.y,
+            this.settings.TARGET.z
+        );
+        
+        this.camera.position.copy(initialPosition);
+        this.camera.lookAt(target);
         
         this.controls = new OrbitControls(this.camera, this.domElement);
-        this.controls.enableDamping = this.settings.enableDamping;
-        this.controls.dampingFactor = this.settings.dampingFactor;
-        this.controls.rotateSpeed = this.settings.rotateSpeed;
-        this.controls.minDistance = this.settings.minDistance;
-        this.controls.maxDistance = this.settings.maxDistance;
-        this.controls.target.copy(this.settings.target);
+        
+        // 設定を適用
+        this.controls.enableDamping = this.settings.ENABLE_DAMPING;
+        this.controls.dampingFactor = this.settings.DAMPING_FACTOR;
+        this.controls.rotateSpeed = this.settings.ROTATE_SPEED;
+        this.controls.zoomSpeed = this.settings.ZOOM_SPEED;
+        this.controls.panSpeed = this.settings.PAN_SPEED;
+        this.controls.minDistance = this.settings.MIN_DISTANCE;
+        this.controls.maxDistance = this.settings.MAX_DISTANCE;
+        this.controls.target.copy(target);
     }
     
     update() {

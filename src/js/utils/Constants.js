@@ -1,5 +1,25 @@
 import * as THREE from 'three';
 
+//================================
+// カメラ設定の定数
+//================================
+export const CAMERA_CONFIG = {
+    DEFAULT: {
+        ENABLE_DAMPING: true,
+        DAMPING_FACTOR: 0.05,
+        ROTATE_SPEED: 1.0,
+        ZOOM_SPEED: 1.0,
+        PAN_SPEED: 1.0,
+        MIN_DISTANCE: 3,
+        MAX_DISTANCE: 15,
+        INITIAL_POSITION: { x: 5, y: 5, z: 5 },
+        TARGET: { x: 0, y: 0, z: 0 }
+    }
+};
+
+
+
+
 export const CUBE_COLORS = {
     front: 0xFFFFFF,   // 白（前面）
     back:  0xFFDD00,   // 明るい黄（後面）
