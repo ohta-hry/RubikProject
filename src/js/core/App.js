@@ -1,13 +1,11 @@
 import * as THREE from 'three';
 import { SceneManager } from './SceneManager.js';
 import { CubeManager } from '../components/CubeManager.js';
-import { MouseControls } from '../controls/MouseControls.js';
+import { CameraController } from '../controls/CameraControls.js';
 
 export class App {
-
     
     constructor() {
-        this.isRotating = false;
         this.init();
     }
     
@@ -19,16 +17,15 @@ export class App {
         this.setupCamera();
         this.setupRenderer();
         
-        // キューブ作成
-        this.cubeManager.createCube();
-        this.sceneManager.scene.add(this.cubeManager.cubeGroup);
-        
         // ライト設定
         this.sceneManager.setupLights();
         
-        // マウスコントロール
-        this.mouseControls = new MouseControls(this.renderer, this.cubeManager.cubeGroup);
+        this.cameraController = new CameraController(this.camera, this.renderer.domElement);
         
+        // キューブ作成
+        this.cubeManager.createCube();
+        this.cubeManager.addAllCubesToScene(this.sceneManager.scene);
+
         // アニメーション開始
         this.animate();
     }
@@ -37,7 +34,7 @@ export class App {
     setupCamera() {
         // カメラ設定（元のinit関数内のカメラ部分）
         this.camera = new THREE.PerspectiveCamera(
-            75,                          // 視野角（FOV）
+            60,                          // 視野角（FOV）
             window.innerWidth / window.innerHeight, // アスペクト比（画面比率に合わせる）
             0.1,                         // 近クリップ面（これより近いものは描画しない）
             1000                         // 遠クリップ面（これより遠いものは描画しない）
@@ -64,11 +61,7 @@ export class App {
     animate = () => {
         requestAnimationFrame(this.animate);
         
-        if (this.isRotating) {
-            this.cubeManager.cubeGroup.rotation.x += 0.01;
-            this.cubeManager.cubeGroup.rotation.y += 0.01;
-        }
-        
+        this.cameraController.update();
         this.renderer.render(this.sceneManager.scene, this.camera);
     }
     

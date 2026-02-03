@@ -5,7 +5,7 @@ import { getCubeType } from '../utils/Helpers.js';
 
 export class CubeManager {
     constructor() {
-        this.cubeGroup = new THREE.Group();
+        this.cubes = [];
         this.categorizedCubes = {
             corners: [],
             edges: [],
@@ -14,8 +14,6 @@ export class CubeManager {
     }
     
     createCube() {
-            // グループを作成（全体のルービックキューブ）
-            this.cubeGroup = new THREE.Group();
             
             // 3x3x3のループでキューブを生成・分類
             for (let x = 0; x < 3; x++) {
@@ -26,31 +24,49 @@ export class CubeManager {
                             continue;
                         }
                         
-                        const cube = new SmallCube(x, y, z);
+                        // 現在の配列の長さ＝添字
                         const type = getCubeType(x, y, z);
+                        const cube = new SmallCube(x, y, z, type);
                         
                         // 判定された種類に応じて、適切な配列に格納
                         switch (type) {
-                            case 'corner':
+                            case 'corner': 
+                                cube.index = this.categorizedCubes.corners.length;
                                 this.categorizedCubes.corners.push(cube);
                                 break;
-                            case 'edge':
-                                this.categorizedCubes.edges.push(cube);
+                            case 'edge'  : 
+                                cube.index = this.categorizedCubes.edges.length;
+                                this.categorizedCubes.edges.push(cube); 
                                 break;
-                            case 'center':
-                                this.categorizedCubes.centers.push(cube);
+                            case 'center': 
+                                cube.index = this.categorizedCubes.centers.length;
+                                this.categorizedCubes.centers.push(cube); 
                                 break;
                         }
                         
-                        // 見た目はcubeGroupにまとめて追加
-                        this.cubeGroup.add(cube.group);
+                        this.cubes.push(cube); 
                     }
                 }
             }
             
             // デバッグ情報をコンソールに出力
-            console.log("コーナーキューブの数:", this.categorizedCubes.corners.length); // 8
-            console.log("エッジキューブの数:", this.categorizedCubes.edges.length);     // 12
-            console.log("センターキューブの数:", this.categorizedCubes.centers.length);   // 6
+            console.log("コーナーキューブの数:", this.categorizedCubes.corners); // 8
+            console.log("エッジキューブの数:", this.categorizedCubes.edges);     // 12
+            console.log("センターキューブの数:", this.categorizedCubes.centers);   // 6
         }
+    
+    // 新しいメソッド: 全キューブをシーンに追加
+    addAllCubesToScene(scene) {
+        this.cubes.forEach(cube => {
+            scene.add(cube.group);
+        });
+    }
+    
+    // 新しいメソッド: 特定の条件のキューブを取得
+    getCubesByCondition(conditionFn) {
+        return this.cubes.filter(conditionFn);
+    }
 }
+
+
+

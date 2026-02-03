@@ -1,65 +1,56 @@
 import * as THREE from 'three';
-import { CUBE_COLORS } from '../utils/Constants.js';
+import { CUBE_COLORS, BASE_CUBE_COLOR, CUBE_SPACING, 
+    PANEL_SIZE, PANEL_POSITIONS, PANEL_ROTATIONS, PANEL_EMISSIVE_INTENSITY } from '../utils/Constants.js';
+
+
 
 // SmallCubeクラス
 export class SmallCube {
-    constructor(x, y, z) {
-        this.group = new THREE.Group();
-        this.gridPosition = { x, y, z };
+    #group;
+    #gridPosition;
+    #pieceType;
+    #pieceIndex = -1;
+    
+    constructor(x, y, z, type) {
+        this.#group = new THREE.Group();
+        this.#gridPosition = { x, y, z };
         
-        const spacing = 1.0;
-        this.group.position.set(
-            (x - 1) * spacing,
-            (y - 1) * spacing,
-            (z - 1) * spacing
+        this.#group.position.set(
+            (x - 1) * CUBE_SPACING,
+            (y - 1) * CUBE_SPACING,
+            (z - 1) * CUBE_SPACING
         );
         
-        this._createVisuals();
+        this.#pieceType = type;
+
+        this.#createVisuals();
     }
     
-    _createVisuals() {
+    #createVisuals() {
         // 黒い立方体のベース
         const geometry = new THREE.BoxGeometry(1, 1, 1);
-        const baseMaterial = new THREE.MeshLambertMaterial({ color: 0x222222 });
+        const baseMaterial = new THREE.MeshLambertMaterial({ color: BASE_CUBE_COLOR });
         const baseCube = new THREE.Mesh(geometry, baseMaterial);
         baseCube.castShadow = true;
         baseCube.receiveShadow = true;
-        this.group.add(baseCube);
+        this.#group.add(baseCube);
         
-        // 各面に色付きパネルを追加
-        const facePositions = [
-            new THREE.Vector3(0.501, 0, 0),    // 右面
-            new THREE.Vector3(-0.501, 0, 0),   // 左面
-            new THREE.Vector3(0, 0.501, 0),    // 上面
-            new THREE.Vector3(0, -0.501, 0),   // 下面
-            new THREE.Vector3(0, 0, 0.501),    // 前面
-            new THREE.Vector3(0, 0, -0.501)    // 後面
-        ];
-        
-        const faceRotations = [
-            new THREE.Euler(0, Math.PI/2, 0),     // 右面
-            new THREE.Euler(0, -Math.PI/2, 0),    // 左面
-            new THREE.Euler(-Math.PI/2, 0, 0),    // 上面
-            new THREE.Euler(Math.PI/2, 0, 0),     // 下面
-            new THREE.Euler(0, 0, 0),             // 前面
-            new THREE.Euler(0, Math.PI, 0)        // 後面
-        ];
         
         for (let faceIndex = 0; faceIndex < 6; faceIndex++) {
-            const color = this._getFaceColor(faceIndex);
+            const color = this.#getFaceColor(faceIndex);
             if (color !== null) {
                 const panel = this._createColorPanel(
                     color,
-                    facePositions[faceIndex],
-                    faceRotations[faceIndex]
+                    PANEL_POSITIONS[faceIndex],
+                    PANEL_ROTATIONS[faceIndex]
                 );
-                this.group.add(panel);
+                this.#group.add(panel);
             }
         }
     }
     
-    _getFaceColor(faceIndex) {
-        const { x, y, z } = this.gridPosition;
+    #getFaceColor(faceIndex) {
+        const { x, y, z } = this.#gridPosition;
         
         const isRightFace = (x === 2 && faceIndex === 0);
         const isLeftFace = (x === 0 && faceIndex === 1);
@@ -79,10 +70,10 @@ export class SmallCube {
     }
     
     _createColorPanel(color, position, rotation) {
-        const panelGeometry = new THREE.PlaneGeometry(0.85, 0.85);
+        const panelGeometry = new THREE.PlaneGeometry(PANEL_SIZE, PANEL_SIZE);
         const panelMaterial = new THREE.MeshLambertMaterial({
             color: color,
-            emissive: new THREE.Color(color).multiplyScalar(0.1)
+            emissive: new THREE.Color(color).multiplyScalar(PANEL_EMISSIVE_INTENSITY)
         });
         
         const panel = new THREE.Mesh(panelGeometry, panelMaterial);
@@ -92,5 +83,70 @@ export class SmallCube {
         panel.rotation.copy(rotation);
         
         return panel;
+    }
+
+
+
+    _addToParent(parentGroup) {
+        parentGroup.add(this.#group);
+        return this; // メソッドチェーン可能に
+    }
+
+
+    get group() {return this.#group;}
+
+    get type()  {return this.#pieceType;}   
+    
+    set index(index) {
+        if (this.#pieceIndex == -1) {this.#pieceIndex = index;}
+    }
+    get index() {return this.#pieceIndex;}
+
+
+
+    static EDGE_POSITIONS = [
+        { x: -1, y: -1, z: 0 },
+        { x: -1, y: 0, z: -1 },
+        { x: -1, y: 0, z: 1 },
+        { x: -1, y: 1, z: 0 },
+        { x: 0, y: -1, z: -1 },
+        { x: 0, y: -1, z: 1 },
+        { x: 0, y: 1, z: -1 },
+        { x: 0, y: 1, z: 1 },
+        { x: 1, y: -1, z: 0 },
+        { x: 1, y: 0, z: -1 },
+        { x: 1, y: 0, z: 1 },
+        { x: 1, y: 1, z: 0 },
+    ];
+    static CENTER_AXES = ['x', 'y', 'z', 'z', 'y', 'x'];
+    static CENTER_SIGNS = [-1, -1, -1, 1, 1, 1];
+
+    _setPosition(index, quaternion){
+        
+        switch (this.#pieceType) {
+            case 'corner': 
+                //console.log(this.#group.position)
+                this.#group.position.set(
+                    (index & 4) ? 1 : -1,
+                    (index & 2) ? 1 : -1,
+                    (index & 1) ? 1 : -1
+                );
+                //console.log("  " , this.#group.position)
+                break;
+
+            case 'edge': 
+                this.#group.position.set(this.constructor.EDGE_POSITIONS[index].x, this.constructor.EDGE_POSITIONS[index].y, this.constructor.EDGE_POSITIONS[index].z);
+                console.log(this.#group.position)
+                break;
+
+            case 'center':  
+                const axis = this.constructor.CENTER_AXES[index];
+                const sign = this.constructor.CENTER_SIGNS[index];
+                this.#group.position.set(0,0,0);
+                this.#group.position[axis] = sign;   
+                break;
+        }
+
+        this.#group.quaternion.copy(quaternion);
     }
 }

@@ -8,11 +8,11 @@ export class SceneManager {
     
     setupLights() {
         // 環境光を明るくして全体的に見やすく
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1.6);     //本来0.8、暫定処理として数値変更
+        const ambientLight = new THREE.AmbientLight(0xffffff, 3);     //本来0.8、暫定処理として数値変更
         this.scene.add(ambientLight);
         
         // 平行光源を弱くして影を薄く
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
         directionalLight.position.set(5, 8, 5);
         directionalLight.castShadow = true;
         
