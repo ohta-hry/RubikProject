@@ -6,7 +6,6 @@ import { CameraController } from '../controls/CameraControls.js';
 export class App {
     
     constructor() {
-        this.isRotating = false;
         this.init();
     }
     

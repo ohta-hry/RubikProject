@@ -24,25 +24,35 @@ export class CubeManager {
                             continue;
                         }
                         
-                        const cube = new SmallCube(x, y, z);
+                        // 現在の配列の長さ＝添字
                         const type = getCubeType(x, y, z);
+                        const cube = new SmallCube(x, y, z, type);
                         
                         // 判定された種類に応じて、適切な配列に格納
                         switch (type) {
-                            case 'corner': this.categorizedCubes.corners.push(cube); break;
-                            case 'edge'  : this.categorizedCubes.edges.push(cube); break;
-                            case 'center': this.categorizedCubes.centers.push(cube); break;
+                            case 'corner': 
+                                cube.index = this.categorizedCubes.corners.length;
+                                this.categorizedCubes.corners.push(cube);
+                                break;
+                            case 'edge'  : 
+                                cube.index = this.categorizedCubes.edges.length;
+                                this.categorizedCubes.edges.push(cube); 
+                                break;
+                            case 'center': 
+                                cube.index = this.categorizedCubes.centers.length;
+                                this.categorizedCubes.centers.push(cube); 
+                                break;
                         }
-                    
+                        
                         this.cubes.push(cube); 
                     }
                 }
             }
             
             // デバッグ情報をコンソールに出力
-            console.log("コーナーキューブの数:", this.categorizedCubes.corners.length); // 8
-            console.log("エッジキューブの数:", this.categorizedCubes.edges.length);     // 12
-            console.log("センターキューブの数:", this.categorizedCubes.centers.length);   // 6
+            console.log("コーナーキューブの数:", this.categorizedCubes.corners); // 8
+            console.log("エッジキューブの数:", this.categorizedCubes.edges);     // 12
+            console.log("センターキューブの数:", this.categorizedCubes.centers);   // 6
         }
     
     // 新しいメソッド: 全キューブをシーンに追加

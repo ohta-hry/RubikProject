@@ -2,12 +2,16 @@ import * as THREE from 'three';
 import { CUBE_COLORS, BASE_CUBE_COLOR, CUBE_SPACING, 
     PANEL_SIZE, PANEL_POSITIONS, PANEL_ROTATIONS, PANEL_EMISSIVE_INTENSITY } from '../utils/Constants.js';
 
+
+
 // SmallCubeクラス
 export class SmallCube {
     #group;
     #gridPosition;
+    #pieceType;
+    #pieceIndex = -1;
     
-    constructor(x, y, z) {
+    constructor(x, y, z, type) {
         this.#group = new THREE.Group();
         this.#gridPosition = { x, y, z };
         
@@ -17,6 +21,8 @@ export class SmallCube {
             (z - 1) * CUBE_SPACING
         );
         
+        this.#pieceType = type;
+
         this.#createVisuals();
     }
     
@@ -86,18 +92,61 @@ export class SmallCube {
         return this; // メソッドチェーン可能に
     }
 
-    get group() {
-        return this.#group;
+
+    get group() {return this.#group;}
+
+    get type()  {return this.#pieceType;}   
+    
+    set index(index) {
+        if (this.#pieceIndex == -1) {this.#pieceIndex = index;}
     }
+    get index() {return this.#pieceIndex;}
 
-    _setPosition(x, y, z, q) {
-        this.#gridPosition = { x, y, z };
-        this.#group.position.set(
-            (x - 1) * CUBE_SPACING,
-            (y - 1) * CUBE_SPACING,
-            (z - 1) * CUBE_SPACING
-        );
-        this.#group.quaternion.copy(q);
 
+
+    static EDGE_POSITIONS = [
+        { x: -1, y: -1, z: 0 },
+        { x: -1, y: 0, z: -1 },
+        { x: -1, y: 0, z: 1 },
+        { x: -1, y: 1, z: 0 },
+        { x: 0, y: -1, z: -1 },
+        { x: 0, y: -1, z: 1 },
+        { x: 0, y: 1, z: -1 },
+        { x: 0, y: 1, z: 1 },
+        { x: 1, y: -1, z: 0 },
+        { x: 1, y: 0, z: -1 },
+        { x: 1, y: 0, z: 1 },
+        { x: 1, y: 1, z: 0 },
+    ];
+    static CENTER_AXES = ['x', 'y', 'z', 'z', 'y', 'x'];
+    static CENTER_SIGNS = [-1, -1, -1, 1, 1, 1];
+
+    _setPosition(index, quaternion){
+        
+        switch (this.#pieceType) {
+            case 'corner': 
+                //console.log(this.#group.position)
+                this.#group.position.set(
+                    (index & 4) ? 1 : -1,
+                    (index & 2) ? 1 : -1,
+                    (index & 1) ? 1 : -1
+                );
+                //console.log("  " , this.#group.position)
+                break;
+
+            case 'edge': 
+                this.#group.position.set(this.constructor.EDGE_POSITIONS[index].x, this.constructor.EDGE_POSITIONS[index].y, this.constructor.EDGE_POSITIONS[index].z);
+                console.log(this.#group.position)
+                break;
+
+            case 'center':  
+                const axis = this.constructor.CENTER_AXES[index];
+                const sign = this.constructor.CENTER_SIGNS[index];
+                this.#group.position.set(0,0,0);
+                this.#group.position[axis] = sign;   
+                break;
+        }
+
+        this.#group.quaternion.copy(quaternion);
     }
 }
