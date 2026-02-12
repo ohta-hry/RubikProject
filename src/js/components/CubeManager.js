@@ -54,9 +54,9 @@ export class CubeManager {
             }
             
             // デバッグ情報をコンソールに出力
-            console.log("コーナーキューブの数:", this.categorizedCubes.corners); // 8
-            console.log("エッジキューブの数:", this.categorizedCubes.edges);     // 12
-            console.log("センターキューブの数:", this.categorizedCubes.centers);   // 6
+            //console.log("コーナーキューブの数:", this.categorizedCubes.corners); // 8
+            //console.log("エッジキューブの数:", this.categorizedCubes.edges);     // 12
+            //console.log("センターキューブの数:", this.categorizedCubes.centers);   // 6
         }
     
     // メソッド: 全キューブをシーンに追加
@@ -75,6 +75,14 @@ export class CubeManager {
         this.#currentOperation = ro;
         
         console.log(this.#currentOperation);
+        console.log(`[${this.#currentOperation.pos_corner.join(', ')}]`);
+        console.log(`[${this.#currentOperation.pos_edge.join(', ')}]`);
+        console.log(`[${this.#currentOperation.pos_center.join(', ')}]`);
+        console.log(this.#currentOperation.qua_corner);
+        console.log(this.#currentOperation.qua_edge);
+        console.log(this.#currentOperation.qua_center);
+        console.log("===============================================");
+        console.log(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2));
 
         this.categorizedCubes.corners.forEach((cube, i) => {
             cube._setPosition(this.#currentOperation.pos_corner[i],this.#currentOperation.qua_corner[i]);

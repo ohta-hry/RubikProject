@@ -28,7 +28,7 @@ export class App {
         this.cubeManager.addAllCubesToScene(this.sceneManager.scene);
 
         //以下仮の文
-        this.RO = RubikOperation.F().inverse();
+        this.RO = RubikOperation.F().compose(RubikOperation.R());
         this.cubeManager.applyRubikOperation(this.RO);
 
         // アニメーション開始
