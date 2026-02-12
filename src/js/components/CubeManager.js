@@ -2,8 +2,12 @@ import * as THREE from 'three';
 
 import { SmallCube } from './SmallCube.js';
 import { getCubeType } from '../utils/Helpers.js';
+import { RubikOperation } from '../utils/RubikOperation.js';
 
 export class CubeManager {
+    /** @type {RubikOperation} */
+    #currentOperation;
+    
     constructor() {
         this.cubes = [];
         this.categorizedCubes = {
@@ -55,17 +59,53 @@ export class CubeManager {
             console.log("センターキューブの数:", this.categorizedCubes.centers);   // 6
         }
     
-    // 新しいメソッド: 全キューブをシーンに追加
+    // メソッド: 全キューブをシーンに追加
     addAllCubesToScene(scene) {
         this.cubes.forEach(cube => {
             scene.add(cube.group);
         });
     }
     
-    // 新しいメソッド: 特定の条件のキューブを取得
+    /** @type {RubikOperation} */
+    applyRubikOperation(ro) {
+        if (!(ro instanceof RubikOperation)) {
+            throw new TypeError("Invalid operation");
+        }
+        
+        this.#currentOperation = ro;
+        
+        console.log(this.#currentOperation);
+
+        this.categorizedCubes.corners.forEach((cube, i) => {
+            cube._setPosition(this.#currentOperation.pos_corner[i],this.#currentOperation.qua_corner[i]);
+        });
+
+        this.categorizedCubes.edges.forEach((cube, i) => {
+            cube._setPosition(this.#currentOperation.pos_edge[i],this.#currentOperation.qua_edge[i]);
+        });
+
+        this.categorizedCubes.centers.forEach((cube, i) => {
+            cube._setPosition(this.#currentOperation.pos_center[i],this.#currentOperation.qua_center[i]);
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+    // メソッド: 特定の条件のキューブを取得
     getCubesByCondition(conditionFn) {
         return this.cubes.filter(conditionFn);
     }
+
+
+
+
 }
 
 

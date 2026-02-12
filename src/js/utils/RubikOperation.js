@@ -1,6 +1,6 @@
-import { QUA_ANGLE } from "./Constants";
+import { QUA_ANGLE } from "./Constants.js";
 
-    class RubikOperation {
+export class RubikOperation {
     #pos_corner; #pos_edge; #pos_center;
     #qua_corner; #qua_edge; #qua_center;
 
@@ -26,6 +26,9 @@ import { QUA_ANGLE } from "./Constants";
     get pos_edge() { return this.#pos_edge; }
     get pos_center() { return this.#pos_center; }
 
+    get qua_corner() { return this.#qua_corner; }
+    get qua_edge() { return this.#qua_edge; }
+    get qua_center() { return this.#qua_center; }
 
     #validate() {
         if (this.#pos_corner.length !== 8 ||
