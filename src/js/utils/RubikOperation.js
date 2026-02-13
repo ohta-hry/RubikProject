@@ -51,25 +51,19 @@ export class RubikOperation {
      */
     compose(other) {
         // 位置の合成
-        const new_pos_corner = this.#pos_corner.map((val, i) => this.#pos_corner[other.#pos_corner[i]]);
-        const new_pos_edge = this.#pos_edge.map((val, i) => this.#pos_edge[other.#pos_edge[i]]);
-        const new_pos_center = this.#pos_center.map((val, i) => this.#pos_center[other.#pos_center[i]]);
+        const new_pos_corner = this.#pos_corner.map((val) => other.pos_corner[val]);
+        const new_pos_edge = this.#pos_edge.map((val) => other.pos_edge[val]);
+        const new_pos_center = this.#pos_center.map((val) => other.pos_center[val]);
         
         // クォータニオンの合成
-        const new_qua_corner = this.#qua_corner.map((q, i) => {
-            const otherIndex = other.#pos_corner[i];
-            return q.clone().multiply(other.#qua_corner[otherIndex]);
-        });
+        const new_qua_corner = this.#pos_corner.map((val, i) => 
+            other.qua_corner[val].clone().multiply(this.#qua_corner[i]));
 
-        const new_qua_edge = this.#qua_edge.map((q, i) => {
-        const otherIndex = other.#pos_edge[i];
-        return q.clone().multiply(other.#qua_edge[otherIndex]);
-        });
-        
-        const new_qua_center = this.#qua_center.map((q, i) => {
-        const otherIndex = other.#pos_center[i];
-        return q.clone().multiply(other.#qua_center[otherIndex]);
-        });
+        const new_qua_edge = this.#pos_edge.map((val, i) => 
+            other.qua_edge[val].clone().multiply(this.#qua_edge[i]));
+
+        const new_qua_center = this.#pos_center.map((val, i) => 
+            other.qua_center[val].clone().multiply(this.#qua_center[i]));
         
         return new RubikOperation(
         new_pos_corner, new_pos_edge, new_pos_center,
