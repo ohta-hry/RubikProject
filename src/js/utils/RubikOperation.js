@@ -1,6 +1,6 @@
-import { QUA_ANGLE } from "./Constants";
+import { QUA_ANGLE } from "./Constants.js";
 
-    class RubikOperation {
+export class RubikOperation {
     #pos_corner; #pos_edge; #pos_center;
     #qua_corner; #qua_edge; #qua_center;
 
@@ -26,6 +26,9 @@ import { QUA_ANGLE } from "./Constants";
     get pos_edge() { return this.#pos_edge; }
     get pos_center() { return this.#pos_center; }
 
+    get qua_corner() { return this.#qua_corner; }
+    get qua_edge() { return this.#qua_edge; }
+    get qua_center() { return this.#qua_center; }
 
     #validate() {
         if (this.#pos_corner.length !== 8 ||
@@ -48,25 +51,19 @@ import { QUA_ANGLE } from "./Constants";
      */
     compose(other) {
         // 位置の合成
-        const new_pos_corner = this.#pos_corner.map((val, i) => this.#pos_corner[other.#pos_corner[i]]);
-        const new_pos_edge = this.#pos_edge.map((val, i) => this.#pos_edge[other.#pos_edge[i]]);
-        const new_pos_center = this.#pos_center.map((val, i) => this.#pos_center[other.#pos_center[i]]);
+        const new_pos_corner = this.#pos_corner.map((val) => other.pos_corner[val]);
+        const new_pos_edge = this.#pos_edge.map((val) => other.pos_edge[val]);
+        const new_pos_center = this.#pos_center.map((val) => other.pos_center[val]);
         
         // クォータニオンの合成
-        const new_qua_corner = this.#qua_corner.map((q, i) => {
-            const otherIndex = other.#pos_corner[i];
-            return q.clone().multiply(other.#qua_corner[otherIndex]);
-        });
+        const new_qua_corner = this.#pos_corner.map((val, i) => 
+            other.qua_corner[val].clone().multiply(this.#qua_corner[i]));
 
-        const new_qua_edge = this.#qua_edge.map((q, i) => {
-        const otherIndex = other.#pos_edge[i];
-        return q.clone().multiply(other.#qua_edge[otherIndex]);
-        });
-        
-        const new_qua_center = this.#qua_center.map((q, i) => {
-        const otherIndex = other.#pos_center[i];
-        return q.clone().multiply(other.#qua_center[otherIndex]);
-        });
+        const new_qua_edge = this.#pos_edge.map((val, i) => 
+            other.qua_edge[val].clone().multiply(this.#qua_edge[i]));
+
+        const new_qua_center = this.#pos_center.map((val, i) => 
+            other.qua_center[val].clone().multiply(this.#qua_center[i]));
         
         return new RubikOperation(
         new_pos_corner, new_pos_edge, new_pos_center,
@@ -131,38 +128,38 @@ import { QUA_ANGLE } from "./Constants";
         return new RubikOperation();
     }
     /**
-     * 基本操作 F を定義するファクトリメソッド
+     * 基本操作 F を定義するファクトリメソッド 更新済み
      */
     static F() {
         return this.#createUnitMove(
-        [0, 5, 2, 1, 4, 7, 6, 3],        // pos_corner(F)
-        [0, 1, 5, 3, 4, 10, 6, 2, 8, 9, 7, 11],  // pos_edge(F)
+        [0, 3, 2, 7, 4, 1, 6, 5],        // pos_corner(F)
+        [0, 1, 7, 3, 4, 2, 6, 10, 8, 9, 5, 11],  // pos_edge(F)
         [0, 1, 2, 3, 4, 5],              // pos_center(F)
-        QUA_ANGLE.Zm90                    // Z軸90度回転
+        QUA_ANGLE.Z90                    // Z軸90度回転
         );
     }
 
     /**
-     * 基本操作 B を定義するファクトリメソッド
+     * 基本操作 B を定義するファクトリメソッド 更新済み
      */
     static B() {
         return this.#createUnitMove(
-        [2, 1, 6, 3, 0, 5, 4, 7],  // pos_corner(B)
-        [0, 6, 2, 3, 1, 5, 9, 7, 8, 4, 10, 11],  // pos_edge(B)
+        [4, 1, 0, 3, 6, 5, 2, 7],  // pos_corner(B)
+        [0, 4, 2, 3, 9, 5, 1, 7, 8, 6, 10, 11],  // pos_edge(B)
         [0, 1, 2, 3, 4, 5],                        // pos_center(B)
-        QUA_ANGLE.Z90
+        QUA_ANGLE.Zm90
         );
     }
 
     /**
-     * 基本操作 U を定義するファクトリメソッド
+     * 基本操作 U を定義するファクトリメソッド 更新済み
      */
     static U() {
         return this.#createUnitMove(
-        [0, 1, 3, 7, 4, 5, 2, 6],  // pos_corner(U)
-        [0, 1, 2, 7, 4, 5, 3, 11, 8, 9, 10, 6],  // pos_edge(U)
+        [0, 1, 6, 2, 4, 5, 7, 3],  // pos_corner(U)
+        [0, 1, 2, 6, 4, 5, 11, 3, 8, 9, 10, 7],  // pos_edge(U)
         [0, 1, 2, 3, 4, 5],                        // pos_center(U)
-        QUA_ANGLE.Ym90
+        QUA_ANGLE.Y90
         );
     }
 
@@ -171,10 +168,10 @@ import { QUA_ANGLE } from "./Constants";
      */
     static D() {
         return this.#createUnitMove(
-        [4, 0, 2, 3, 5, 1, 6, 7],  // pos_corner(D)
-        [4, 1, 2, 3, 8, 0, 6, 7, 5, 9, 10, 11],  // pos_edge(D)
+        [1, 5, 2, 3, 0, 4, 6, 7],  // pos_corner(D)
+        [5, 1, 2, 3, 0, 8, 6, 7, 4, 9, 10, 11],  // pos_edge(D)
         [0, 1, 2, 3, 4, 5],                        // pos_center(D)
-        QUA_ANGLE.Y90
+        QUA_ANGLE.Ym90
         );
     }
 
@@ -183,10 +180,10 @@ import { QUA_ANGLE } from "./Constants";
      */
     static L() {
         return this.#createUnitMove(
-        [1, 3, 0, 2, 4, 5, 6, 7],  // pos_corner(L)
-        [2, 0, 3, 1, 4, 5, 6, 7, 8, 9, 10, 11],  // pos_edge(L)
+        [2, 0, 3, 1, 4, 5, 6, 7],  // pos_corner(L)
+        [1, 3, 0, 2, 4, 5, 6, 7, 8, 9, 10, 11],  // pos_edge(L)
         [0, 1, 2, 3, 4, 5],                        // pos_center(L)
-        QUA_ANGLE.X90
+        QUA_ANGLE.Xm90
         );
     }
 
@@ -195,10 +192,10 @@ import { QUA_ANGLE } from "./Constants";
      */
     static R() {
         return this.#createUnitMove(
-        [0, 1, 2, 3, 6, 4, 7, 5],  // pos_corner(R)
-        [0, 1, 2, 3, 4, 5, 6, 7, 9, 11, 8, 10],  // pos_edge(R)
+        [0, 1, 2, 3, 5, 7, 4, 6],  // pos_corner(R)
+        [0, 1, 2, 3, 4, 5, 6, 7, 10, 8, 11, 9],  // pos_edge(R)
         [0, 1, 2, 3, 4, 5],                        // pos_center(R)
-        QUA_ANGLE.Xm90
+        QUA_ANGLE.X90
         );
     }
 
@@ -208,10 +205,10 @@ import { QUA_ANGLE } from "./Constants";
      */
     static M() {
         return this.#createUnitMove(
-        [0, 0, 0, 0, 0, 0, 0, 0],  // pos_corner(M) - 未使用（全て0）
-        [0, 1, 2, 3, 5, 7, 4, 6, 8, 9, 10, 11],  // pos_edge(M)
-        [0, 3, 1, 4, 2, 5],                        // pos_center(M)
-        QUA_ANGLE.X90
+        [0, 1, 2, 3, 4, 5, 6, 7],  // pos_corner(M) - 未使用（全て0）
+        [0, 1, 2, 3, 6, 4, 7, 5, 8, 9, 10, 11],  // pos_edge(M)
+        [0, 2, 4, 1, 3, 5],                        // pos_center(M)
+        QUA_ANGLE.Xm90
         );
     }
 
@@ -220,10 +217,10 @@ import { QUA_ANGLE } from "./Constants";
      */
     static E() {
         return this.#createUnitMove(
-        [0, 0, 0, 0, 0, 0, 0, 0],  // pos_corner(E) - 未使用（全て0）
-        [0, 9, 1, 3, 4, 5, 6, 7, 8, 10, 2, 11],  // pos_edge(E)
-        [2, 1, 5, 0, 4, 3],                        // pos_center(E)
-        QUA_ANGLE.Y90
+        [0, 1, 2, 3, 4, 5, 6, 7],  // pos_corner(E) - 未使用（全て0）
+        [0, 2, 10, 3, 4, 5, 6, 7, 8, 1, 9, 11],  // pos_edge(E)
+        [3, 1, 0, 5, 4, 2],                        // pos_center(E)
+        QUA_ANGLE.Ym90
         );
     }
 
@@ -232,9 +229,9 @@ import { QUA_ANGLE } from "./Constants";
      */
     static S() {
         return this.#createUnitMove(
-        [0, 0, 0, 0, 0, 0, 0, 0],  // pos_corner(S) - 未使用（全て0）
-        [8, 1, 2, 0, 4, 5, 6, 7, 11, 9, 10, 3],  // pos_edge(S)
-        [1, 5, 2, 3, 0, 4],                        // pos_center(S)
+        [0, 1, 2, 3, 4, 5, 6, 7],  // pos_corner(S) - 未使用（全て0）
+        [3, 1, 2, 11, 4, 5, 6, 7, 0, 9, 10, 8],  // pos_edge(S)
+        [4, 0, 2, 3, 5, 1],                        // pos_center(S)
         QUA_ANGLE.Z90
         );
     }

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { SceneManager } from './SceneManager.js';
 import { CubeManager } from '../components/CubeManager.js';
 import { CameraController } from '../controls/CameraControls.js';
+import { RubikOperation } from '../utils/RubikOperation.js';
 
 export class App {
     
@@ -25,6 +26,10 @@ export class App {
         // キューブ作成
         this.cubeManager.createCube();
         this.cubeManager.addAllCubesToScene(this.sceneManager.scene);
+
+        //以下仮の文
+        this.RO = RubikOperation.F().compose(RubikOperation.S());
+        this.cubeManager.applyRubikOperation(this.RO);
 
         // アニメーション開始
         this.animate();

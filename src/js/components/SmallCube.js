@@ -125,18 +125,15 @@ export class SmallCube {
         
         switch (this.#pieceType) {
             case 'corner': 
-                //console.log(this.#group.position)
                 this.#group.position.set(
                     (index & 4) ? 1 : -1,
                     (index & 2) ? 1 : -1,
                     (index & 1) ? 1 : -1
                 );
-                //console.log("  " , this.#group.position)
                 break;
 
             case 'edge': 
                 this.#group.position.set(this.constructor.EDGE_POSITIONS[index].x, this.constructor.EDGE_POSITIONS[index].y, this.constructor.EDGE_POSITIONS[index].z);
-                console.log(this.#group.position)
                 break;
 
             case 'center':  
