@@ -13,6 +13,6 @@
  * シーク位置から算出される現在区間の情報です
  * @typedef {Object} SequenceContext
  * @property {RubikOperation} from - 区間開始時点のキューブ状態
- * @property {Operation} operation - この区間で実行中の操作
+ * @property {Operation|null} operation - この区間で実行中の操作
  * @property {number} progress - 操作の進み具合
  */

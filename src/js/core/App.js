@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { SceneManager } from './SceneManager.js';
 import { CubeManager } from '../components/CubeManager.js';
+import { ClassDataMediator } from '../components/ClassDataMediator.js';
 import { CameraController } from '../controls/CameraControls.js';
 import { RubikOperation } from '../utils/RubikOperation.js';
 
@@ -30,6 +31,7 @@ export class App {
         //以下仮コード
         //this.RO = RubikOperation.F().compose(RubikOperation.D());
         //this.cubeManager.applyRubikOperation(this.RO);
+        console.log(ClassDataMediator.computeSequence([{base:'R',prime:false,wide:false,amount:1}]));
 
         // アニメーション開始
         this.animate();
