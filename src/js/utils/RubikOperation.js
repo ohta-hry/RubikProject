@@ -14,9 +14,9 @@ export class RubikOperation {
         this.#pos_center = Object.freeze([...(pos_center || [0, 1, 2, 3, 4, 5])]);
         
         // クォータニオン配列の初期化（デフォルトは単位クォータニオン）        
-        this.#qua_corner = (qua_corner || Array(8).fill().map(QUA_ANGLE.identity)).map(q => q.clone());
-        this.#qua_edge = (qua_edge || Array(12).fill().map(QUA_ANGLE.identity)).map(q => q.clone());
-        this.#qua_center = (qua_center || Array(6).fill().map(QUA_ANGLE.identity)).map(q => q.clone());
+        this.#qua_corner = (qua_corner || Array(8).fill().map(() => QUA_ANGLE.identity)).map(q => q.clone());
+        this.#qua_edge = (qua_edge || Array(12).fill().map(() => QUA_ANGLE.identity)).map(q => q.clone());
+        this.#qua_center = (qua_center || Array(6).fill().map(() => QUA_ANGLE.identity)).map(q => q.clone());
         
         this.#validate();
     }
