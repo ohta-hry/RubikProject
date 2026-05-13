@@ -31,7 +31,10 @@ export class App {
         //以下仮コード
         //this.RO = RubikOperation.F().compose(RubikOperation.D());
         //this.cubeManager.applyRubikOperation(this.RO);
-        console.log(ClassDataMediator.computeSequence([{base:'R',prime:false,wide:false,amount:1}]));
+        const testOperations = [{base:'R',prime:false,wide:false,amount:1},{base:'F',prime:false,wide:false,amount:2}];
+        console.log(ClassDataMediator.computeSequence(testOperations));
+        const testContext = ClassDataMediator.getSegment(0.4, testOperations);
+        this.cubeManager.rotateFromState(testContext.from, testContext.operation, testContext.progress);
 
         // アニメーション開始
         this.animate();
