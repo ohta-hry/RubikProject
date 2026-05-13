@@ -37,16 +37,46 @@
         button:hover {
             background-color: #45a049;
         }
+
+        #controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        #moves-input {
+            width: min(320px, 90vw);
+            padding: 8px;
+            font-size: 16px;
+        }
+
+        #seek-bar {
+            width: min(480px, 90vw);
+        }
+
+        #status-message {
+            width: 100%;
+            min-height: 1.5em;
+            color: #333;
+        }
     </style>
 </head>
 <body>
     <div id="container">
         <h1>Three.js 基本立方体</h1>
         
-        <!-- テスト用ボタン -->
-        <div>
-            <button onclick="rotateCube()">立方体を回転</button>
-            <button onclick="resetCube()">回転リセット</button>
+        <!-- 操作用UI -->
+        <div id="controls">
+            <input id="moves-input" type="text" value="R U R' U'" aria-label="操作記法">
+            <button id="analyze-button" type="button">解析</button>
+            <button id="play-button" type="button">再生</button>
+            <input id="seek-bar" type="range" min="0" max="1000" value="0" aria-label="シークバー">
+            <span id="seek-label">0%</span>
+            <div id="status-message"></div>
         </div>
         
         <!-- Three.js用のcanvas -->
