@@ -27,9 +27,9 @@ export class App {
         this.cubeManager.createCube();
         this.cubeManager.addAllCubesToScene(this.sceneManager.scene);
 
-        //以下仮の文
-        this.RO = RubikOperation.F().compose(RubikOperation.D());
-        this.cubeManager.applyRubikOperation(this.RO);
+        //以下仮コード
+        //this.RO = RubikOperation.F().compose(RubikOperation.D());
+        //this.cubeManager.applyRubikOperation(this.RO);
 
         // アニメーション開始
         this.animate();
