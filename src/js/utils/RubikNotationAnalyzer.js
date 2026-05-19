@@ -71,7 +71,12 @@ class RubikParser {
         const op={base:m.value,wide:false,prime:false,amount:1};
         while(!this.isEOF()){
             const n=this.peek();
-            if(n.type==="WIDE"){op.wide=true;this.advance();continue;}
+            if(n.type==="WIDE"){
+                if(["x","y","z"].includes(op.base)) {
+                    throw new Error(`${op.base} はワイドムーブにできません`);
+                }
+                op.wide=true;this.advance();continue;
+            }
             if(n.type==="PRIME"){op.prime=true;this.advance();continue;}
             if(n.type==="NUMBER"){op.amount=n.value;this.advance();continue;}
             break;

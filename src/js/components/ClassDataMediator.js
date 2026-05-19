@@ -74,9 +74,11 @@ export class ClassDataMediator {
             case 'S':
                 return this.#createRotationConfig('z', [0], -angleDirection, amount);
             case 'x':
-            case 'y':
+                return this.#createRotationConfig('x', [-1, 0, 1], -angleDirection, amount);
             case 'z':
-                throw new Error(`${operation.base} rotations are not supported yet`);
+                return this.#createRotationConfig('z', [-1, 0, 1], -angleDirection, amount);
+            case 'y':
+                return this.#createRotationConfig('y', [-1, 0, 1], -angleDirection, amount);
             default:
                 throw new Error(`Unsupported operation base: ${operation.base}`);
         }
@@ -173,10 +175,9 @@ export class ClassDataMediator {
             case 'M': return () => RubikOperation.M();
             case 'E': return () => RubikOperation.E();
             case 'S': return () => RubikOperation.S();
-            case 'x':
-            case 'y':
-            case 'z':
-                throw new Error(`${base} rotations are not supported yet`);
+            case 'x': return () => RubikOperation.x();
+            case 'y': return () => RubikOperation.y();
+            case 'z': return () => RubikOperation.z();
             default:
                 throw new Error(`Unsupported operation base: ${base}`);
         }
