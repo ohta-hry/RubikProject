@@ -235,4 +235,15 @@ export class RubikOperation {
         QUA_ANGLE.Z90
         );
     }
+
+    static Rw() { return this.R().compose(this.M().inverse()); }
+    static Lw() { return this.L().compose(this.M()); }
+    static Uw() { return this.U().compose(this.E().inverse()); }
+    static Dw() { return this.D().compose(this.E()); }
+    static Fw() { return this.F().compose(this.S()); }
+    static Bw() { return this.B().compose(this.S().inverse()); }
+
+    static x() { return this.R().compose(this.M().inverse()).compose(this.L().inverse()); }
+    static y() { return this.U().compose(this.E().inverse()).compose(this.D().inverse()); }
+    static z() { return this.F().compose(this.S()).compose(this.B().inverse()); }
     }

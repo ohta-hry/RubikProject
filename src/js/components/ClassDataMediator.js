@@ -1,4 +1,5 @@
 import { RubikOperation } from '../utils/RubikOperation.js';
+import { getBaseLayer } from '../utils/Helpers.js';
 
 export class ClassDataMediator {
     /**
@@ -11,11 +12,7 @@ export class ClassDataMediator {
             throw new TypeError('operation.base is required');
         }
 
-        if (operation.wide) {
-            throw new Error('wide moves are not supported yet');
-        }
-
-        const factory = this.#getFactory(operation.base);
+        const factory = this.#getFactory(operation.base, operation.wide || false);
         const amount = operation.amount ?? 1;
 
         if (!Number.isInteger(amount) || amount < 0) {
@@ -30,6 +27,61 @@ export class ClassDataMediator {
         }
 
         return result;
+    }
+
+    /**
+     * 記法解析結果の1操作を補間回転用の設定に変換します。
+     * @param {Operation} operation
+     * @returns {RotationConfig}
+     */
+    static toRotationConfig(operation) {
+        if (!operation || typeof operation.base !== 'string') {
+            throw new TypeError('operation.base is required');
+        }
+
+        const amount = operation.amount ?? 1;
+
+        if (!Number.isInteger(amount) || amount < 0) {
+            throw new Error('operation.amount must be a non-negative integer');
+        }
+
+        const angleDirection = operation.prime ? -1 : 1;
+
+        if (operation.wide && !['R', 'L', 'U', 'D', 'F', 'B'].includes(operation.base)) {
+            throw new Error(`Wide move not supported: ${operation.base}w`);
+        }
+
+        const baseLayer = getBaseLayer(operation.base);
+        const layers = operation.wide ? [baseLayer, 0] : [baseLayer];
+
+        switch (operation.base) {
+            case 'R':
+                return this.#createRotationConfig('x', layers, -angleDirection, amount);
+            case 'L':
+                return this.#createRotationConfig('x', layers, angleDirection, amount);
+            case 'M':
+                return this.#createRotationConfig('x', [0], angleDirection, amount);
+            case 'U':
+                return this.#createRotationConfig('y', layers, -angleDirection, amount);
+            case 'D':
+                return this.#createRotationConfig('y', layers, angleDirection, amount);
+            case 'E':
+                return this.#createRotationConfig('y', [0], angleDirection, amount);
+            case 'F':
+                return this.#createRotationConfig('z', layers, -angleDirection, amount);
+            case 'B':
+                return this.#createRotationConfig('z', layers, angleDirection, amount);
+            case 'S':
+                return this.#createRotationConfig('z', [0], -angleDirection, amount);
+            case 'x':
+                return this.#createRotationConfig('x', [-1, 0, 1], -angleDirection, amount);
+            case 'z':
+                return this.#createRotationConfig('z', [-1, 0, 1], -angleDirection, amount);
+            case 'y':
+                return this.#createRotationConfig('y', [-1, 0, 1], -angleDirection, amount);
+            default:
+                throw new Error(`Unsupported operation base: ${operation.base}`);
+        }
     }
 
     /**
@@ -72,7 +124,7 @@ export class ClassDataMediator {
         if (operations.length === 0) {
             return {
                 from: states[0],
-                operation: null,
+                rotationConfig: null,
                 progress: 0
             };
         }
@@ -86,12 +138,33 @@ export class ClassDataMediator {
 
         return {
             from: states[operationIndex],
-            operation: operations[operationIndex],
+            rotationConfig: this.toRotationConfig(operations[operationIndex]),
             progress
         };
     }
 
-    static #getFactory(base) {
+    static #createRotationConfig(axisName, layers, direction, amount) {
+        return {
+            axisName,
+            layers,
+            totalAngle: direction * amount * Math.PI / 2
+        };
+    }
+
+    static #getFactory(base, wide = false) {
+        if (wide) {
+            switch (base) {
+                case 'R': return () => RubikOperation.Rw();
+                case 'L': return () => RubikOperation.Lw();
+                case 'U': return () => RubikOperation.Uw();
+                case 'D': return () => RubikOperation.Dw();
+                case 'F': return () => RubikOperation.Fw();
+                case 'B': return () => RubikOperation.Bw();
+                default:
+                    throw new Error(`Wide move not supported: ${base}w`);
+            }
+        }
+
         switch (base) {
             case 'F': return () => RubikOperation.F();
             case 'B': return () => RubikOperation.B();
@@ -102,6 +175,9 @@ export class ClassDataMediator {
             case 'M': return () => RubikOperation.M();
             case 'E': return () => RubikOperation.E();
             case 'S': return () => RubikOperation.S();
+            case 'x': return () => RubikOperation.x();
+            case 'y': return () => RubikOperation.y();
+            case 'z': return () => RubikOperation.z();
             default:
                 throw new Error(`Unsupported operation base: ${base}`);
         }
