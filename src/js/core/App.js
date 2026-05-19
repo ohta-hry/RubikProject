@@ -122,7 +122,7 @@ export class App {
         this.seekBar.progress = this.seekPos;
 
         const context = ClassDataMediator.getSegment(this.seekPos, this.operationSequence);
-        this.cubeManager.rotateFromState(context.from, context.operation, context.progress);
+        this.cubeManager.rotateFromState(context.from, context.rotationConfig, context.progress);
         this.updateSeekUi();
     }
 

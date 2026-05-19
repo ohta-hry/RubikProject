@@ -90,10 +90,10 @@ export class CubeManager {
     /**
      * 区間開始状態を基準に、指定操作の途中状態を表示します。
      * @param {RubikOperation} from - 区間開始時点の状態
-     * @param {Operation|null} operation - 補間する操作
+     * @param {RotationConfig|null} rotationConfig - 補間回転の設定
      * @param {number} progress - 0.0から1.0までの進捗
      */
-    rotateFromState(from, operation, progress) {
+    rotateFromState(from, rotationConfig, progress) {
         if (!(from instanceof RubikOperation)) {
             throw new TypeError("Invalid from operation");
         }
@@ -105,32 +105,27 @@ export class CubeManager {
         this.#currentOperation = from;
         this.#setCubesFromRubikOperation(from);
 
-        if (operation === null) {
+        if (rotationConfig === null) {
             return;
         }
 
-        const rotationConfig = this.#getRotationConfig(operation);
+        this.#validateRotationConfig(rotationConfig);
         const clampedProgress = Math.min(Math.max(progress, 0), 1);
-        const amount = operation.amount ?? 1;
-
-        if (!Number.isInteger(amount) || amount < 0) {
-            throw new Error("operation.amount must be a non-negative integer");
-        }
-
-        const angle = rotationConfig.anglePerTurn * amount * clampedProgress;
+        const angle = rotationConfig.totalAngle * clampedProgress;
 
         if (angle === 0) {
             return;
         }
 
-        const rotationQuaternion = new THREE.Quaternion().setFromAxisAngle(rotationConfig.axisVector, angle);
+        const axisVector = this.#createAxisVector(rotationConfig.axisName);
+        const rotationQuaternion = new THREE.Quaternion().setFromAxisAngle(axisVector, angle);
 
         this.cubes.forEach(cube => {
-            if (!this.#isCubeInLayer(cube, rotationConfig.axisName, rotationConfig.layer)) {
+            if (!this.#isCubeInLayers(cube, rotationConfig.axisName, rotationConfig.layers)) {
                 return;
             }
 
-            cube.group.position.applyAxisAngle(rotationConfig.axisVector, angle);
+            cube.group.position.applyAxisAngle(axisVector, angle);
             cube.group.quaternion.premultiply(rotationQuaternion);
         });
     }
@@ -149,56 +144,34 @@ export class CubeManager {
         });
     }
 
-    #getRotationConfig(operation) {
-        if (!operation || typeof operation.base !== 'string') {
-            throw new TypeError("operation.base is required");
+    #validateRotationConfig(rotationConfig) {
+        if (!rotationConfig || typeof rotationConfig !== 'object') {
+            throw new TypeError("rotationConfig must be an object");
         }
 
-        if (operation.wide) {
-            throw new Error("wide moves are not supported yet");
+        if (!['x', 'y', 'z'].includes(rotationConfig.axisName)) {
+            throw new Error("rotationConfig.axisName must be x, y, or z");
         }
 
-        const angleDirection = operation.prime ? -1 : 1;
+        if (!Array.isArray(rotationConfig.layers)) {
+            throw new Error("rotationConfig.layers must be an array");
+        }
 
-        switch (operation.base) {
-            case 'R':
-                return this.#createRotationConfig('x', 1, -angleDirection);
-            case 'L':
-                return this.#createRotationConfig('x', -1, angleDirection);
-            case 'M':
-                return this.#createRotationConfig('x', 0, angleDirection);
-            case 'U':
-                return this.#createRotationConfig('y', 1, -angleDirection);
-            case 'D':
-                return this.#createRotationConfig('y', -1, angleDirection);
-            case 'E':
-                return this.#createRotationConfig('y', 0, angleDirection);
-            case 'F':
-                return this.#createRotationConfig('z', 1, -angleDirection);
-            case 'B':
-                return this.#createRotationConfig('z', -1, angleDirection);
-            case 'S':
-                return this.#createRotationConfig('z', 0, -angleDirection);
-            default:
-                throw new Error(`Unsupported operation base: ${operation.base}`);
+        if (!Number.isFinite(rotationConfig.totalAngle)) {
+            throw new Error("rotationConfig.totalAngle must be a finite number");
         }
     }
 
-    #createRotationConfig(axisName, layer, direction) {
-        return {
-            axisName,
-            layer,
-            axisVector: new THREE.Vector3(
-                axisName === 'x' ? 1 : 0,
-                axisName === 'y' ? 1 : 0,
-                axisName === 'z' ? 1 : 0
-            ),
-            anglePerTurn: direction * Math.PI / 2
-        };
+    #createAxisVector(axisName) {
+        return new THREE.Vector3(
+            axisName === 'x' ? 1 : 0,
+            axisName === 'y' ? 1 : 0,
+            axisName === 'z' ? 1 : 0
+        );
     }
 
-    #isCubeInLayer(cube, axisName, layer) {
-        return Math.abs(cube.group.position[axisName] - layer) < 0.001;
+    #isCubeInLayers(cube, axisName, layers) {
+        return layers.some(layer => Math.abs(cube.group.position[axisName] - layer) < 0.001);
     }
 
 

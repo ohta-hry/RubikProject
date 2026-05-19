@@ -1,4 +1,4 @@
-const NORMAL_MOVE_PATTERN = /[FRUBLDMES]/i;
+const NORMAL_MOVE_PATTERN = /[FRUBLDMESxyz]/i;
 
 class Token { constructor(t,v){this.type=t;this.value=v;} }
 
@@ -32,7 +32,11 @@ class RubikLexer {
         while(!this.isEOF()){
             const c=this.peek();
             if(/\s/.test(c)){this.advance();continue;}
-            if(NORMAL_MOVE_PATTERN.test(c)){t.push(new Token("MOVE",this.advance()));continue;}
+            if(NORMAL_MOVE_PATTERN.test(c)){
+                const move = this.advance();
+                t.push(new Token("MOVE",/[xyz]/i.test(move) ? move.toLowerCase() : move.toUpperCase()));
+                continue;
+            }
             if(c==="w"){t.push(new Token("WIDE",this.advance()));continue;}
             if(c==="'"){t.push(new Token("PRIME",this.advance()));continue;}
             if(/[0-9]/.test(c)){
