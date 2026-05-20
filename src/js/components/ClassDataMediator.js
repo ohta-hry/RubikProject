@@ -1,6 +1,11 @@
 import { RubikOperation } from '../utils/RubikOperation.js';
 import { getBaseLayer } from '../utils/Helpers.js';
 
+const QUARTER_TURN = Math.PI / 2;
+const MIDDLE_LAYER = [0];
+const ALL_LAYERS = [-1, 0, 1];
+const WIDE_SUPPORTED_BASES = ['R', 'L', 'U', 'D', 'F', 'B'];
+
 export class ClassDataMediator {
     /**
      * 記法解析結果の1操作をRubikOperationに変換します。
@@ -47,7 +52,7 @@ export class ClassDataMediator {
 
         const angleDirection = operation.prime ? -1 : 1;
 
-        if (operation.wide && !['R', 'L', 'U', 'D', 'F', 'B'].includes(operation.base)) {
+        if (operation.wide && !WIDE_SUPPORTED_BASES.includes(operation.base)) {
             throw new Error(`Wide move not supported: ${operation.base}w`);
         }
 
@@ -60,25 +65,25 @@ export class ClassDataMediator {
             case 'L':
                 return this.#createRotationConfig('x', layers, angleDirection, amount);
             case 'M':
-                return this.#createRotationConfig('x', [0], angleDirection, amount);
+                return this.#createRotationConfig('x', MIDDLE_LAYER, angleDirection, amount);
             case 'U':
                 return this.#createRotationConfig('y', layers, -angleDirection, amount);
             case 'D':
                 return this.#createRotationConfig('y', layers, angleDirection, amount);
             case 'E':
-                return this.#createRotationConfig('y', [0], angleDirection, amount);
+                return this.#createRotationConfig('y', MIDDLE_LAYER, angleDirection, amount);
             case 'F':
                 return this.#createRotationConfig('z', layers, -angleDirection, amount);
             case 'B':
                 return this.#createRotationConfig('z', layers, angleDirection, amount);
             case 'S':
-                return this.#createRotationConfig('z', [0], -angleDirection, amount);
+                return this.#createRotationConfig('z', MIDDLE_LAYER, -angleDirection, amount);
             case 'x':
-                return this.#createRotationConfig('x', [-1, 0, 1], -angleDirection, amount);
+                return this.#createRotationConfig('x', ALL_LAYERS, -angleDirection, amount);
             case 'z':
-                return this.#createRotationConfig('z', [-1, 0, 1], -angleDirection, amount);
+                return this.#createRotationConfig('z', ALL_LAYERS, -angleDirection, amount);
             case 'y':
-                return this.#createRotationConfig('y', [-1, 0, 1], -angleDirection, amount);
+                return this.#createRotationConfig('y', ALL_LAYERS, -angleDirection, amount);
             default:
                 throw new Error(`Unsupported operation base: ${operation.base}`);
         }
@@ -147,7 +152,7 @@ export class ClassDataMediator {
         return {
             axisName,
             layers,
-            totalAngle: direction * amount * Math.PI / 2
+            totalAngle: direction * amount * QUARTER_TURN
         };
     }
 

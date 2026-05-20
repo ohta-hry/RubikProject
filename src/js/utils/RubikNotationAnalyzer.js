@@ -1,8 +1,40 @@
-const NORMAL_MOVE_PATTERN = /[FRUBLDMESxyz]/i;
+const MOVE_PATTERN = /[FRUBLDMESxyz]/i;
+const XYZ_BASES = ['x', 'y', 'z'];
+const GROUP_SYMBOLS = '()';
+const PAIR_KINDS = {
+    COMMUTATOR: 'commutator',
+    SETUP: 'setup'
+};
+const TOKEN_TYPES = {
+    MOVE: 'MOVE',
+    WIDE: 'WIDE',
+    PRIME: 'PRIME',
+    NUMBER: 'NUMBER',
+    SYMBOL: 'SYMBOL',
+    COMMA: 'COMMA',
+    LBRACKET: 'LBRACKET',
+    RBRACKET: 'RBRACKET',
+    LBRACE: 'LBRACE',
+    RBRACE: 'RBRACE'
+};
+const PAIR_SYNTAX = {
+    [PAIR_KINDS.COMMUTATOR]: {
+        openType: TOKEN_TYPES.LBRACKET,
+        closeType: TOKEN_TYPES.RBRACKET,
+        label: 'コミュテータ',
+        closeSymbol: ']'
+    },
+    [PAIR_KINDS.SETUP]: {
+        openType: TOKEN_TYPES.LBRACE,
+        closeType: TOKEN_TYPES.RBRACE,
+        label: 'セットアップ',
+        closeSymbol: '}'
+    }
+};
 
 class Token { constructor(t,v){this.type=t;this.value=v;} }
 
-function OperationArrayPrime(operations) {
+function invertOperationSequence(operations) {
     return [...operations].reverse().map(operation => ({
         ...operation,
         prime: !operation.prime
@@ -39,24 +71,24 @@ class RubikLexer {
         while(!this.isEOF()){
             const c=this.peek();
             if(/\s/.test(c)){this.advance();continue;}
-            if(NORMAL_MOVE_PATTERN.test(c)){
+            if(MOVE_PATTERN.test(c)){
                 const move = this.advance();
-                t.push(new Token("MOVE",/[xyz]/i.test(move) ? move.toLowerCase() : move.toUpperCase()));
+                t.push(new Token(TOKEN_TYPES.MOVE,XYZ_BASES.includes(move.toLowerCase()) ? move.toLowerCase() : move.toUpperCase()));
                 continue;
             }
-            if(c==="w"){t.push(new Token("WIDE",this.advance()));continue;}
-            if(c==="'"){t.push(new Token("PRIME",this.advance()));continue;}
-            if(c==="["){t.push(new Token("LBRACKET",this.advance()));continue;}
-            if(c==="]"){t.push(new Token("RBRACKET",this.advance()));continue;}
-            if(c==="{"){t.push(new Token("LBRACE",this.advance()));continue;}
-            if(c==="}"){t.push(new Token("RBRACE",this.advance()));continue;}
-            if(c===","){t.push(new Token("COMMA",this.advance()));continue;}
+            if(c==="w"){t.push(new Token(TOKEN_TYPES.WIDE,this.advance()));continue;}
+            if(c==="'"){t.push(new Token(TOKEN_TYPES.PRIME,this.advance()));continue;}
+            if(c==="["){t.push(new Token(TOKEN_TYPES.LBRACKET,this.advance()));continue;}
+            if(c==="]"){t.push(new Token(TOKEN_TYPES.RBRACKET,this.advance()));continue;}
+            if(c==="{"){t.push(new Token(TOKEN_TYPES.LBRACE,this.advance()));continue;}
+            if(c==="}"){t.push(new Token(TOKEN_TYPES.RBRACE,this.advance()));continue;}
+            if(c===","){t.push(new Token(TOKEN_TYPES.COMMA,this.advance()));continue;}
             if(/[0-9]/.test(c)){
                 let n="";
                 while(!this.isEOF()&&/[0-9]/.test(this.peek()))n+=this.advance();
-                t.push(new Token("NUMBER",parseInt(n,10)));continue;
+                t.push(new Token(TOKEN_TYPES.NUMBER,parseInt(n,10)));continue;
             }
-            if("()".includes(c)){t.push(new Token("SYMBOL",this.advance()));continue;}
+            if(GROUP_SYMBOLS.includes(c)){t.push(new Token(TOKEN_TYPES.SYMBOL,this.advance()));continue;}
             throw new Error(`不明な文字: ${c}`);
         }
         return t;
@@ -76,31 +108,29 @@ class RubikParser {
         while(!this.isEOF()){
             const t = this.peek();
             if(stopTypes.includes(t.type)) break;
-            if(t.type==="MOVE"){ops.push(this.parseMove());continue;}
-            if(t.type==="LBRACKET"){ops.push(...this.parsePairExpression("commutator"));continue;}
-            if(t.type==="LBRACE"){ops.push(...this.parsePairExpression("setup"));continue;}
-            if(t.type==="RBRACKET") throw new Error("対応する [ がない ] です");
-            if(t.type==="RBRACE") throw new Error("対応する { がない } です");
-            if(t.type==="COMMA") throw new Error("特殊構文外に , があります");
-            if(t.type==="SYMBOL") throw new Error("特殊構文は未実装です");
+            if(t.type===TOKEN_TYPES.MOVE){ops.push(this.parseMove());continue;}
+            if(t.type===TOKEN_TYPES.LBRACKET){ops.push(...this.parsePairExpression(PAIR_KINDS.COMMUTATOR));continue;}
+            if(t.type===TOKEN_TYPES.LBRACE){ops.push(...this.parsePairExpression(PAIR_KINDS.SETUP));continue;}
+            if(t.type===TOKEN_TYPES.RBRACKET) throw new Error("対応する [ がない ] です");
+            if(t.type===TOKEN_TYPES.RBRACE) throw new Error("対応する { がない } です");
+            if(t.type===TOKEN_TYPES.COMMA) throw new Error("特殊構文外に , があります");
+            if(t.type===TOKEN_TYPES.SYMBOL) throw new Error("特殊構文は未実装です");
             throw new Error(`予期しないトークン: ${t.type}`);
         }
         return ops;
     }
     parsePairExpression(kind){
-        const isCommutator = kind === "commutator";
-        const openType = isCommutator ? "LBRACKET" : "LBRACE";
-        const closeType = isCommutator ? "RBRACKET" : "RBRACE";
-        const label = isCommutator ? "コミュテータ" : "セットアップ";
-        const closeSymbol = isCommutator ? "]" : "}";
+        const syntax = PAIR_SYNTAX[kind];
+        const isCommutator = kind === PAIR_KINDS.COMMUTATOR;
+        const { openType, closeType, label, closeSymbol } = syntax;
 
         this.expect(openType);
 
-        const a = this.parseSequence(["COMMA", closeType]);
+        const a = this.parseSequence([TOKEN_TYPES.COMMA, closeType]);
         if(a.length === 0) throw new Error(`${label}の左辺が空です`);
 
         if(this.isEOF()) throw new Error(`${label}の , と ${closeSymbol} がありません`);
-        if(this.peek().type !== "COMMA") throw new Error(`${label}には , が必要です`);
+        if(this.peek().type !== TOKEN_TYPES.COMMA) throw new Error(`${label}には , が必要です`);
         this.advance();
 
         const b = this.parseSequence([closeType]);
@@ -113,15 +143,15 @@ class RubikParser {
             return [
                 ...a,
                 ...b,
-                ...OperationArrayPrime(a),
-                ...OperationArrayPrime(b)
+                ...invertOperationSequence(a),
+                ...invertOperationSequence(b)
             ];
         }
 
         return [
             ...a,
             ...b,
-            ...OperationArrayPrime(a)
+            ...invertOperationSequence(a)
         ];
     }
     expect(type){
@@ -135,14 +165,14 @@ class RubikParser {
         const op={base:m.value,wide:false,prime:false,amount:1};
         while(!this.isEOF()){
             const n=this.peek();
-            if(n.type==="WIDE"){
-                if(["x","y","z"].includes(op.base)) {
+            if(n.type===TOKEN_TYPES.WIDE){
+                if(XYZ_BASES.includes(op.base)) {
                     throw new Error(`${op.base} はワイドムーブにできません`);
                 }
                 op.wide=true;this.advance();continue;
             }
-            if(n.type==="PRIME"){op.prime=true;this.advance();continue;}
-            if(n.type==="NUMBER"){op.amount=n.value;this.advance();continue;}
+            if(n.type===TOKEN_TYPES.PRIME){op.prime=true;this.advance();continue;}
+            if(n.type===TOKEN_TYPES.NUMBER){op.amount=n.value;this.advance();continue;}
             break;
         }
         return op;
