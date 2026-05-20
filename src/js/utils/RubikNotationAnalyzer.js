@@ -2,6 +2,13 @@ const NORMAL_MOVE_PATTERN = /[FRUBLDMESxyz]/i;
 
 class Token { constructor(t,v){this.type=t;this.value=v;} }
 
+function OperationArrayPrime(operations) {
+    return [...operations].reverse().map(operation => ({
+        ...operation,
+        prime: !operation.prime
+    }));
+}
+
 export class RubikNotationAnalyzer {
     /**
      * @param {string} text
@@ -39,12 +46,15 @@ class RubikLexer {
             }
             if(c==="w"){t.push(new Token("WIDE",this.advance()));continue;}
             if(c==="'"){t.push(new Token("PRIME",this.advance()));continue;}
+            if(c==="["){t.push(new Token("LBRACKET",this.advance()));continue;}
+            if(c==="]"){t.push(new Token("RBRACKET",this.advance()));continue;}
+            if(c===","){t.push(new Token("COMMA",this.advance()));continue;}
             if(/[0-9]/.test(c)){
                 let n="";
                 while(!this.isEOF()&&/[0-9]/.test(this.peek()))n+=this.advance();
                 t.push(new Token("NUMBER",parseInt(n,10)));continue;
             }
-            if("[](){}".includes(c)){t.push(new Token("SYMBOL",this.advance()));continue;}
+            if("(){}".includes(c)){t.push(new Token("SYMBOL",this.advance()));continue;}
             throw new Error(`不明な文字: ${c}`);
         }
         return t;
@@ -57,14 +67,50 @@ class RubikParser {
     peek(){return this.tokens[this.index];}
     advance(){return this.tokens[this.index++];}
     parse(){
-        const ops=[];
+        return this.parseSequence();
+    }
+    parseSequence(stopTypes = []){
+        const ops = [];
         while(!this.isEOF()){
-            const t=this.peek();
+            const t = this.peek();
+            if(stopTypes.includes(t.type)) break;
             if(t.type==="MOVE"){ops.push(this.parseMove());continue;}
+            if(t.type==="LBRACKET"){ops.push(...this.parseCommutator());continue;}
+            if(t.type==="RBRACKET") throw new Error("対応する [ がない ] です");
+            if(t.type==="COMMA") throw new Error("コミュテータ外に , があります");
             if(t.type==="SYMBOL") throw new Error("特殊構文は未実装です");
             throw new Error(`予期しないトークン: ${t.type}`);
         }
         return ops;
+    }
+    parseCommutator(){
+        this.expect("LBRACKET");
+
+        const a = this.parseSequence(["COMMA", "RBRACKET"]);
+        if(a.length === 0) throw new Error("コミュテータの左辺が空です");
+
+        if(this.isEOF()) throw new Error("コミュテータの , と ] がありません");
+        if(this.peek().type !== "COMMA") throw new Error("コミュテータには , が必要です");
+        this.advance();
+
+        const b = this.parseSequence(["RBRACKET"]);
+        if(b.length === 0) throw new Error("コミュテータの右辺が空です");
+
+        if(this.isEOF()) throw new Error("コミュテータの ] がありません");
+        this.expect("RBRACKET");
+
+        return [
+            ...a,
+            ...b,
+            ...OperationArrayPrime(a),
+            ...OperationArrayPrime(b)
+        ];
+    }
+    expect(type){
+        if(this.isEOF()) throw new Error(`${type} が必要ですが入力が終了しました`);
+        const t = this.advance();
+        if(t.type !== type) throw new Error(`${type} が必要ですが ${t.type} が見つかりました`);
+        return t;
     }
     parseMove(){
         const m=this.advance();
