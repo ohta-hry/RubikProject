@@ -3,16 +3,9 @@ import * as THREE from 'three';
 import { SmallCube } from './SmallCube.js';
 import { getCubeType } from '../utils/Helpers.js';
 import { RubikOperation } from '../utils/RubikOperation.js';
+import { RUBIK_CUBE_CONFIG } from '../utils/Constants.js';
 
-const CUBE_DIMENSION = 3;
-const CUBE_CENTER_INDEX = 1;
-const LAYER_EPSILON = 0.001;
-const VALID_AXIS_NAMES = ['x', 'y', 'z'];
-const PIECE_TYPES = {
-    CORNER: 'corner',
-    EDGE: 'edge',
-    CENTER: 'center'
-};
+const { DIMENSION, CENTER_INDEX, LAYER_EPSILON, AXIS_NAMES, PIECE_TYPES } = RUBIK_CUBE_CONFIG;
 
 export class CubeManager {
     /** @type {RubikOperation} */
@@ -28,10 +21,10 @@ export class CubeManager {
     }
     
     createCube() {
-        for (let x = 0; x < CUBE_DIMENSION; x++) {
-            for (let y = 0; y < CUBE_DIMENSION; y++) {
-                for (let z = 0; z < CUBE_DIMENSION; z++) {
-                    if (x === CUBE_CENTER_INDEX && y === CUBE_CENTER_INDEX && z === CUBE_CENTER_INDEX) {
+        for (let x = 0; x < DIMENSION; x++) {
+            for (let y = 0; y < DIMENSION; y++) {
+                for (let z = 0; z < DIMENSION; z++) {
+                    if (x === CENTER_INDEX && y === CENTER_INDEX && z === CENTER_INDEX) {
                         continue;
                     }
 
@@ -138,7 +131,7 @@ export class CubeManager {
             throw new TypeError("rotationConfig must be an object");
         }
 
-        if (!VALID_AXIS_NAMES.includes(rotationConfig.axisName)) {
+        if (!AXIS_NAMES.includes(rotationConfig.axisName)) {
             throw new Error("rotationConfig.axisName must be x, y, or z");
         }
 

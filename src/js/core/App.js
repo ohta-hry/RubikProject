@@ -5,13 +5,9 @@ import { ClassDataMediator } from '../components/ClassDataMediator.js';
 import { CameraController } from '../controls/CameraControls.js';
 import { SeekBarController } from '../controls/SeekBarController.js';
 import { RubikNotationAnalyzer } from '../utils/RubikNotationAnalyzer.js';
+import { CAMERA_CONFIG } from '../utils/Constants.js';
 
 const DEFAULT_PLAYBACK_SECONDS = 5;
-const CAMERA_FOV = 60;
-const CAMERA_NEAR = 0.1;
-const CAMERA_FAR = 1000;
-const CAMERA_INITIAL_POSITION = { x: 3, y: 3, z: 5 };
-const SCENE_ORIGIN = { x: 0, y: 0, z: 0 };
 const SEEK_PERCENT_SCALE = 100;
 
 export class App {
@@ -44,13 +40,21 @@ export class App {
 
     setupCamera() {
         this.camera = new THREE.PerspectiveCamera(
-            CAMERA_FOV,
+            CAMERA_CONFIG.PERSPECTIVE.FOV,
             window.innerWidth / window.innerHeight,
-            CAMERA_NEAR,
-            CAMERA_FAR
+            CAMERA_CONFIG.PERSPECTIVE.NEAR,
+            CAMERA_CONFIG.PERSPECTIVE.FAR
         );
-        this.camera.position.set(CAMERA_INITIAL_POSITION.x, CAMERA_INITIAL_POSITION.y, CAMERA_INITIAL_POSITION.z);
-        this.camera.lookAt(SCENE_ORIGIN.x, SCENE_ORIGIN.y, SCENE_ORIGIN.z);
+        this.camera.position.set(
+            CAMERA_CONFIG.CONTROLS.INITIAL_POSITION.x,
+            CAMERA_CONFIG.CONTROLS.INITIAL_POSITION.y,
+            CAMERA_CONFIG.CONTROLS.INITIAL_POSITION.z
+        );
+        this.camera.lookAt(
+            CAMERA_CONFIG.CONTROLS.TARGET.x,
+            CAMERA_CONFIG.CONTROLS.TARGET.y,
+            CAMERA_CONFIG.CONTROLS.TARGET.z
+        );
     }
 
     setupRenderer() {

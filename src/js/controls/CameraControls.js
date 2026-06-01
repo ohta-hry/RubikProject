@@ -8,7 +8,7 @@ export class CameraController {
         this.domElement = rendererDomElement;
         
         this.settings = {
-            ...CAMERA_CONFIG.DEFAULT,
+            ...CAMERA_CONFIG.CONTROLS,
             ...options
         };
         

@@ -1,4 +1,4 @@
-import { QUA_ANGLE } from "./Constants.js";
+import { ROTATION_QUATERNIONS } from "./Constants.js";
 
 export class RubikOperation {
     #pos_corner; #pos_edge; #pos_center;
@@ -14,9 +14,9 @@ export class RubikOperation {
         this.#pos_center = Object.freeze([...(pos_center || [0, 1, 2, 3, 4, 5])]);
         
         // クォータニオン配列の初期化（デフォルトは単位クォータニオン）        
-        this.#qua_corner = (qua_corner || Array(8).fill().map(() => QUA_ANGLE.identity)).map(q => q.clone());
-        this.#qua_edge = (qua_edge || Array(12).fill().map(() => QUA_ANGLE.identity)).map(q => q.clone());
-        this.#qua_center = (qua_center || Array(6).fill().map(() => QUA_ANGLE.identity)).map(q => q.clone());
+        this.#qua_corner = (qua_corner || Array(8).fill().map(() => ROTATION_QUATERNIONS.IDENTITY)).map(q => q.clone());
+        this.#qua_edge = (qua_edge || Array(12).fill().map(() => ROTATION_QUATERNIONS.IDENTITY)).map(q => q.clone());
+        this.#qua_center = (qua_center || Array(6).fill().map(() => ROTATION_QUATERNIONS.IDENTITY)).map(q => q.clone());
         
         this.#validate();
     }
@@ -107,7 +107,7 @@ export class RubikOperation {
     
     static #createUnitMove(pos_corner, pos_edge, pos_center, rotationQuaternion) {
         // デフォルトは単位クォータニオン（回転なし）
-        const defaultQuat = QUA_ANGLE.identity;
+        const defaultQuat = ROTATION_QUATERNIONS.IDENTITY;
         
         // 位置が変化しているピースだけにクォータニオンを設定
         const qua_corner = pos_corner.map((val, i) => val === i ? defaultQuat : rotationQuaternion.clone());
@@ -135,7 +135,7 @@ export class RubikOperation {
         [0, 3, 2, 7, 4, 1, 6, 5],        // pos_corner(F)
         [0, 1, 7, 3, 4, 2, 6, 10, 8, 9, 5, 11],  // pos_edge(F)
         [0, 1, 2, 3, 4, 5],              // pos_center(F)
-        QUA_ANGLE.Z90                    // Z軸90度回転
+        ROTATION_QUATERNIONS.Z90                    // Z軸90度回転
         );
     }
 
@@ -147,7 +147,7 @@ export class RubikOperation {
         [4, 1, 0, 3, 6, 5, 2, 7],  // pos_corner(B)
         [0, 4, 2, 3, 9, 5, 1, 7, 8, 6, 10, 11],  // pos_edge(B)
         [0, 1, 2, 3, 4, 5],                        // pos_center(B)
-        QUA_ANGLE.Zm90
+        ROTATION_QUATERNIONS.Zm90
         );
     }
 
@@ -159,7 +159,7 @@ export class RubikOperation {
         [0, 1, 6, 2, 4, 5, 7, 3],  // pos_corner(U)
         [0, 1, 2, 6, 4, 5, 11, 3, 8, 9, 10, 7],  // pos_edge(U)
         [0, 1, 2, 3, 4, 5],                        // pos_center(U)
-        QUA_ANGLE.Y90
+        ROTATION_QUATERNIONS.Y90
         );
     }
 
@@ -171,7 +171,7 @@ export class RubikOperation {
         [1, 5, 2, 3, 0, 4, 6, 7],  // pos_corner(D)
         [5, 1, 2, 3, 0, 8, 6, 7, 4, 9, 10, 11],  // pos_edge(D)
         [0, 1, 2, 3, 4, 5],                        // pos_center(D)
-        QUA_ANGLE.Ym90
+        ROTATION_QUATERNIONS.Ym90
         );
     }
 
@@ -183,7 +183,7 @@ export class RubikOperation {
         [2, 0, 3, 1, 4, 5, 6, 7],  // pos_corner(L)
         [1, 3, 0, 2, 4, 5, 6, 7, 8, 9, 10, 11],  // pos_edge(L)
         [0, 1, 2, 3, 4, 5],                        // pos_center(L)
-        QUA_ANGLE.Xm90
+        ROTATION_QUATERNIONS.Xm90
         );
     }
 
@@ -195,7 +195,7 @@ export class RubikOperation {
         [0, 1, 2, 3, 5, 7, 4, 6],  // pos_corner(R)
         [0, 1, 2, 3, 4, 5, 6, 7, 10, 8, 11, 9],  // pos_edge(R)
         [0, 1, 2, 3, 4, 5],                        // pos_center(R)
-        QUA_ANGLE.X90
+        ROTATION_QUATERNIONS.X90
         );
     }
 
@@ -208,7 +208,7 @@ export class RubikOperation {
         [0, 1, 2, 3, 4, 5, 6, 7],  // pos_corner(M) - 未使用（全て0）
         [0, 1, 2, 3, 6, 4, 7, 5, 8, 9, 10, 11],  // pos_edge(M)
         [0, 2, 4, 1, 3, 5],                        // pos_center(M)
-        QUA_ANGLE.Xm90
+        ROTATION_QUATERNIONS.Xm90
         );
     }
 
@@ -220,7 +220,7 @@ export class RubikOperation {
         [0, 1, 2, 3, 4, 5, 6, 7],  // pos_corner(E) - 未使用（全て0）
         [0, 2, 10, 3, 4, 5, 6, 7, 8, 1, 9, 11],  // pos_edge(E)
         [3, 1, 0, 5, 4, 2],                        // pos_center(E)
-        QUA_ANGLE.Ym90
+        ROTATION_QUATERNIONS.Ym90
         );
     }
 
@@ -232,7 +232,7 @@ export class RubikOperation {
         [0, 1, 2, 3, 4, 5, 6, 7],  // pos_corner(S) - 未使用（全て0）
         [3, 1, 2, 11, 4, 5, 6, 7, 0, 9, 10, 8],  // pos_edge(S)
         [4, 0, 2, 3, 5, 1],                        // pos_center(S)
-        QUA_ANGLE.Z90
+        ROTATION_QUATERNIONS.Z90
         );
     }
 
