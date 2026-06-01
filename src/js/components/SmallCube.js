@@ -1,10 +1,9 @@
 import * as THREE from 'three';
-import { CUBE_COLORS, BASE_CUBE_COLOR, CUBE_SPACING, 
-    PANEL_SIZE, PANEL_POSITIONS, PANEL_ROTATIONS, PANEL_EMISSIVE_INTENSITY } from '../utils/Constants.js';
+import { RUBIK_CUBE_CONFIG, SMALL_CUBE_CONFIG } from '../utils/Constants.js';
+
+const { GRID, BASE, FACES, PANEL } = SMALL_CUBE_CONFIG;
 
 
-
-// SmallCubeクラス
 export class SmallCube {
     #group;
     #gridPosition;
@@ -16,9 +15,9 @@ export class SmallCube {
         this.#gridPosition = { x, y, z };
         
         this.#group.position.set(
-            (x - 1) * CUBE_SPACING,
-            (y - 1) * CUBE_SPACING,
-            (z - 1) * CUBE_SPACING
+            (x - GRID.CENTER) * RUBIK_CUBE_CONFIG.SPACING,
+            (y - GRID.CENTER) * RUBIK_CUBE_CONFIG.SPACING,
+            (z - GRID.CENTER) * RUBIK_CUBE_CONFIG.SPACING
         );
         
         this.#pieceType = type;
@@ -27,22 +26,20 @@ export class SmallCube {
     }
     
     #createVisuals() {
-        // 黒い立方体のベース
-        const geometry = new THREE.BoxGeometry(1, 1, 1);
-        const baseMaterial = new THREE.MeshLambertMaterial({ color: BASE_CUBE_COLOR });
+        const geometry = new THREE.BoxGeometry(BASE.SIZE, BASE.SIZE, BASE.SIZE);
+        const baseMaterial = new THREE.MeshLambertMaterial({ color: BASE.COLOR });
         const baseCube = new THREE.Mesh(geometry, baseMaterial);
         baseCube.castShadow = true;
         baseCube.receiveShadow = true;
         this.#group.add(baseCube);
         
-        
-        for (let faceIndex = 0; faceIndex < 6; faceIndex++) {
+        for (let faceIndex = 0; faceIndex < FACES.COUNT; faceIndex++) {
             const color = this.#getFaceColor(faceIndex);
             if (color !== null) {
                 const panel = this._createColorPanel(
                     color,
-                    PANEL_POSITIONS[faceIndex],
-                    PANEL_ROTATIONS[faceIndex]
+                    PANEL.POSITIONS[faceIndex],
+                    PANEL.ROTATIONS[faceIndex]
                 );
                 this.#group.add(panel);
             }
@@ -52,33 +49,33 @@ export class SmallCube {
     #getFaceColor(faceIndex) {
         const { x, y, z } = this.#gridPosition;
         
-        const isRightFace = (x === 2 && faceIndex === 0);
-        const isLeftFace = (x === 0 && faceIndex === 1);
-        const isTopFace = (y === 2 && faceIndex === 2);
-        const isBottomFace = (y === 0 && faceIndex === 3);
-        const isFrontFace = (z === 2 && faceIndex === 4);
-        const isBackFace = (z === 0 && faceIndex === 5);
+        const isRightFace = (x === GRID.MAX && faceIndex === FACES.INDEX.RIGHT);
+        const isLeftFace = (x === GRID.MIN && faceIndex === FACES.INDEX.LEFT);
+        const isTopFace = (y === GRID.MAX && faceIndex === FACES.INDEX.TOP);
+        const isBottomFace = (y === GRID.MIN && faceIndex === FACES.INDEX.BOTTOM);
+        const isFrontFace = (z === GRID.MAX && faceIndex === FACES.INDEX.FRONT);
+        const isBackFace = (z === GRID.MIN && faceIndex === FACES.INDEX.BACK);
         
-        if (isRightFace) return CUBE_COLORS.right;
-        if (isLeftFace) return CUBE_COLORS.left;
-        if (isTopFace) return CUBE_COLORS.top;
-        if (isBottomFace) return CUBE_COLORS.bottom;
-        if (isFrontFace) return CUBE_COLORS.front;
-        if (isBackFace) return CUBE_COLORS.back;
+        if (isRightFace) return FACES.COLORS.right;
+        if (isLeftFace) return FACES.COLORS.left;
+        if (isTopFace) return FACES.COLORS.top;
+        if (isBottomFace) return FACES.COLORS.bottom;
+        if (isFrontFace) return FACES.COLORS.front;
+        if (isBackFace) return FACES.COLORS.back;
         
         return null;
     }
     
     _createColorPanel(color, position, rotation) {
-        const panelGeometry = new THREE.PlaneGeometry(PANEL_SIZE, PANEL_SIZE);
+        const panelGeometry = new THREE.PlaneGeometry(PANEL.SIZE, PANEL.SIZE);
         const panelMaterial = new THREE.MeshLambertMaterial({
             color: color,
-            emissive: new THREE.Color(color).multiplyScalar(PANEL_EMISSIVE_INTENSITY)
+            emissive: new THREE.Color(color).multiplyScalar(PANEL.EMISSIVE_INTENSITY)
         });
         
         const panel = new THREE.Mesh(panelGeometry, panelMaterial);
-        panel.castShadow = true;    // 影を投射
-        panel.receiveShadow = true; // 影を受け取る
+        panel.castShadow = true;
+        panel.receiveShadow = true;
         panel.position.copy(position);
         panel.rotation.copy(rotation);
         
@@ -89,7 +86,7 @@ export class SmallCube {
 
     _addToParent(parentGroup) {
         parentGroup.add(this.#group);
-        return this; // メソッドチェーン可能に
+        return this;
     }
 
 
