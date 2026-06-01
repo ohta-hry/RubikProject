@@ -6,6 +6,14 @@ import { CameraController } from '../controls/CameraControls.js';
 import { SeekBarController } from '../controls/SeekBarController.js';
 import { RubikNotationAnalyzer } from '../utils/RubikNotationAnalyzer.js';
 
+const DEFAULT_PLAYBACK_SECONDS = 5;
+const CAMERA_FOV = 60;
+const CAMERA_NEAR = 0.1;
+const CAMERA_FAR = 1000;
+const CAMERA_INITIAL_POSITION = { x: 3, y: 3, z: 5 };
+const SCENE_ORIGIN = { x: 0, y: 0, z: 0 };
+const SEEK_PERCENT_SCALE = 100;
+
 export class App {
     
     constructor() {
@@ -15,54 +23,44 @@ export class App {
     init() {
         this.sceneManager = new SceneManager();
         this.cubeManager = new CubeManager();
-        
-        // カメラ、レンダラーの設定
+
         this.setupCamera();
         this.setupRenderer();
-        
-        // ライト設定
         this.sceneManager.setupLights();
         
         this.cameraController = new CameraController(this.camera, this.renderer.domElement);
-        
-        // キューブ作成
+
         this.cubeManager.createCube();
         this.cubeManager.addAllCubesToScene(this.sceneManager.scene);
 
         this.operationSequence = [];
         this.seekPos = 0;
-        this.seekBar = new SeekBarController(5);
+        this.seekBar = new SeekBarController(DEFAULT_PLAYBACK_SECONDS);
         this.setupControls();
         this.loadMoves(this.movesInput.value);
 
-        // アニメーション開始
         this.animate();
     }
-    
-    // App.js内のメソッド
+
     setupCamera() {
-        // カメラ設定（元のinit関数内のカメラ部分）
         this.camera = new THREE.PerspectiveCamera(
-            60,                          // 視野角（FOV）
-            window.innerWidth / window.innerHeight, // アスペクト比（画面比率に合わせる）
-            0.1,                         // 近クリップ面（これより近いものは描画しない）
-            1000                         // 遠クリップ面（これより遠いものは描画しない）
+            CAMERA_FOV,
+            window.innerWidth / window.innerHeight,
+            CAMERA_NEAR,
+            CAMERA_FAR
         );
-        this.camera.position.set(3, 3, 5); // カメラ位置を(3, 3, 5)に設定
-        this.camera.lookAt(0, 0, 0);       // 原点(0,0,0)を見る
+        this.camera.position.set(CAMERA_INITIAL_POSITION.x, CAMERA_INITIAL_POSITION.y, CAMERA_INITIAL_POSITION.z);
+        this.camera.lookAt(SCENE_ORIGIN.x, SCENE_ORIGIN.y, SCENE_ORIGIN.z);
     }
 
     setupRenderer() {
-        // レンダラー設定（元のinit関数内のレンダラー部分）
-        this.renderer = new THREE.WebGLRenderer({ 
-            antialias: true               // アンチエイリアス有効（ジャギー防止）
-        });
+        this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.renderer.setSize(
-            window.innerWidth,            // 幅（画面全体）
-            window.innerHeight            // 高さ（画面全体）
+            window.innerWidth,
+            window.innerHeight
         );
-        this.renderer.shadowMap.enabled = true; // 影を有効化
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap; // ソフトシャドウ
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.getElementById('canvas-container').appendChild(this.renderer.domElement);
     }
 
@@ -129,7 +127,7 @@ export class App {
     updateSeekUi() {
         const max = Number(this.seekBarInput.max);
         this.seekBarInput.value = Math.round(this.seekPos * max);
-        this.seekLabel.textContent = `${Math.round(this.seekPos * 100)}%`;
+        this.seekLabel.textContent = `${Math.round(this.seekPos * SEEK_PERCENT_SCALE)}%`;
     }
 
     updatePlayButton() {
@@ -140,7 +138,6 @@ export class App {
         this.statusMessage.textContent = message;
     }
     
-    // アニメーションループ
     animate = () => {
         requestAnimationFrame(this.animate);
         

@@ -1,5 +1,3 @@
-//JSDoc用のファイル
-
 /**
  * ルービックキューブの1操作を表す構造体です
  * @typedef {Object} Operation

@@ -7,7 +7,6 @@ export class CameraController {
         this.camera = camera;
         this.domElement = rendererDomElement;
         
-        // デフォルト設定とオプションをマージ
         this.settings = {
             ...CAMERA_CONFIG.DEFAULT,
             ...options
@@ -18,7 +17,6 @@ export class CameraController {
     }
     
     init() {
-        // Vector3に変換
         const initialPosition = new THREE.Vector3(
             this.settings.INITIAL_POSITION.x,
             this.settings.INITIAL_POSITION.y,
@@ -36,7 +34,6 @@ export class CameraController {
         
         this.controls = new OrbitControls(this.camera, this.domElement);
         
-        // 設定を適用
         this.controls.enableDamping = this.settings.ENABLE_DAMPING;
         this.controls.dampingFactor = this.settings.DAMPING_FACTOR;
         this.controls.rotateSpeed = this.settings.ROTATE_SPEED;

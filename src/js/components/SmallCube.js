@@ -2,9 +2,21 @@ import * as THREE from 'three';
 import { CUBE_COLORS, BASE_CUBE_COLOR, CUBE_SPACING, 
     PANEL_SIZE, PANEL_POSITIONS, PANEL_ROTATIONS, PANEL_EMISSIVE_INTENSITY } from '../utils/Constants.js';
 
+const GRID_CENTER = 1;
+const GRID_MIN = 0;
+const GRID_MAX = 2;
+const BASE_CUBE_SIZE = 1;
+const FACE_COUNT = 6;
+const FACE_INDEX = {
+    RIGHT: 0,
+    LEFT: 1,
+    TOP: 2,
+    BOTTOM: 3,
+    FRONT: 4,
+    BACK: 5
+};
 
 
-// SmallCubeクラス
 export class SmallCube {
     #group;
     #gridPosition;
@@ -16,9 +28,9 @@ export class SmallCube {
         this.#gridPosition = { x, y, z };
         
         this.#group.position.set(
-            (x - 1) * CUBE_SPACING,
-            (y - 1) * CUBE_SPACING,
-            (z - 1) * CUBE_SPACING
+            (x - GRID_CENTER) * CUBE_SPACING,
+            (y - GRID_CENTER) * CUBE_SPACING,
+            (z - GRID_CENTER) * CUBE_SPACING
         );
         
         this.#pieceType = type;
@@ -27,16 +39,14 @@ export class SmallCube {
     }
     
     #createVisuals() {
-        // 黒い立方体のベース
-        const geometry = new THREE.BoxGeometry(1, 1, 1);
+        const geometry = new THREE.BoxGeometry(BASE_CUBE_SIZE, BASE_CUBE_SIZE, BASE_CUBE_SIZE);
         const baseMaterial = new THREE.MeshLambertMaterial({ color: BASE_CUBE_COLOR });
         const baseCube = new THREE.Mesh(geometry, baseMaterial);
         baseCube.castShadow = true;
         baseCube.receiveShadow = true;
         this.#group.add(baseCube);
         
-        
-        for (let faceIndex = 0; faceIndex < 6; faceIndex++) {
+        for (let faceIndex = 0; faceIndex < FACE_COUNT; faceIndex++) {
             const color = this.#getFaceColor(faceIndex);
             if (color !== null) {
                 const panel = this._createColorPanel(
@@ -52,12 +62,12 @@ export class SmallCube {
     #getFaceColor(faceIndex) {
         const { x, y, z } = this.#gridPosition;
         
-        const isRightFace = (x === 2 && faceIndex === 0);
-        const isLeftFace = (x === 0 && faceIndex === 1);
-        const isTopFace = (y === 2 && faceIndex === 2);
-        const isBottomFace = (y === 0 && faceIndex === 3);
-        const isFrontFace = (z === 2 && faceIndex === 4);
-        const isBackFace = (z === 0 && faceIndex === 5);
+        const isRightFace = (x === GRID_MAX && faceIndex === FACE_INDEX.RIGHT);
+        const isLeftFace = (x === GRID_MIN && faceIndex === FACE_INDEX.LEFT);
+        const isTopFace = (y === GRID_MAX && faceIndex === FACE_INDEX.TOP);
+        const isBottomFace = (y === GRID_MIN && faceIndex === FACE_INDEX.BOTTOM);
+        const isFrontFace = (z === GRID_MAX && faceIndex === FACE_INDEX.FRONT);
+        const isBackFace = (z === GRID_MIN && faceIndex === FACE_INDEX.BACK);
         
         if (isRightFace) return CUBE_COLORS.right;
         if (isLeftFace) return CUBE_COLORS.left;
@@ -77,8 +87,8 @@ export class SmallCube {
         });
         
         const panel = new THREE.Mesh(panelGeometry, panelMaterial);
-        panel.castShadow = true;    // 影を投射
-        panel.receiveShadow = true; // 影を受け取る
+        panel.castShadow = true;
+        panel.receiveShadow = true;
         panel.position.copy(position);
         panel.rotation.copy(rotation);
         
@@ -89,7 +99,7 @@ export class SmallCube {
 
     _addToParent(parentGroup) {
         parentGroup.add(this.#group);
-        return this; // メソッドチェーン可能に
+        return this;
     }
 
 
