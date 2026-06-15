@@ -34,7 +34,7 @@ export class App {
         this.seekBar = new SeekBarController(DEFAULT_PLAYBACK_SECONDS);
         this.setupControls();
         this.loadMoves(this.movesInput.value);
-
+        window.addEventListener('resize', () => this.handleResize());  
         this.animate();
     }
 
@@ -68,6 +68,15 @@ export class App {
         document.getElementById('canvas-container').appendChild(this.renderer.domElement);
     }
 
+    handleResize() {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        
+        this.renderer.setSize(width, height);
+        this.camera.aspect = width / height;
+        this.camera.updateProjectionMatrix();
+    }
+    
     setupControls() {
         this.movesInput = document.getElementById('moves-input');
         this.analyzeButton = document.getElementById('analyze-button');
