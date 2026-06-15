@@ -7,6 +7,10 @@ const ALL_LAYERS = [-1, 0, 1];
 const WIDE_SUPPORTED_BASES = ['R', 'L', 'U', 'D', 'F', 'B'];
 
 export class ClassDataMediator {
+    static createIdentityState() {
+        return RubikOperation.identity();
+    }
+
     /**
      * 記法解析結果の1操作をRubikOperationに変換します。
      * @param {Operation} operation
@@ -94,12 +98,16 @@ export class ClassDataMediator {
      * @param {Operation[]} operations
      * @returns {RubikOperation[]}
      */
-    static computeSequence(operations) {
+    static computeSequence(operations, initialState = RubikOperation.identity()) {
         if (!Array.isArray(operations)) {
             throw new TypeError('operations must be an array');
         }
 
-        const states = [RubikOperation.identity()];
+        if (!(initialState instanceof RubikOperation)) {
+            throw new TypeError('initialState must be a RubikOperation');
+        }
+
+        const states = [initialState];
 
         operations.forEach(operation => {
             const current = states[states.length - 1];
@@ -115,7 +123,7 @@ export class ClassDataMediator {
      * @param {Operation[]} operations
      * @returns {SequenceContext}
      */
-    static getSegment(seekPos, operations) {
+    static getSegment(seekPos, operations, states = this.computeSequence(operations)) {
         if (!Number.isFinite(seekPos)) {
             throw new TypeError('seekPos must be a finite number');
         }
@@ -124,7 +132,9 @@ export class ClassDataMediator {
             throw new TypeError('operations must be an array');
         }
 
-        const states = this.computeSequence(operations);
+        if (!Array.isArray(states) || states.length !== operations.length + 1) {
+            throw new Error('states length must be operations length + 1');
+        }
 
         if (operations.length === 0) {
             return {
@@ -146,6 +156,11 @@ export class ClassDataMediator {
             rotationConfig: this.toRotationConfig(operations[operationIndex]),
             progress
         };
+    }
+
+    static getFinalState(operations, initialState = RubikOperation.identity()) {
+        const states = this.computeSequence(operations, initialState);
+        return states[states.length - 1];
     }
 
     static #createRotationConfig(axisName, layers, direction, amount) {

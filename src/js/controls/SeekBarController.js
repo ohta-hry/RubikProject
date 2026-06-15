@@ -1,4 +1,4 @@
-const MS_PER_SECOND = 1000;
+const MS_PER_SECOND = 500;
 const MIN_PROGRESS = 0;
 const MAX_PROGRESS = 1;
 

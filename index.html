@@ -38,6 +38,22 @@
             background-color: #45a049;
         }
 
+        button[data-mode="scramble"] {
+            background-color: #d97706;
+        }
+
+        button[data-mode="scramble"]:hover {
+            background-color: #b45309;
+        }
+
+        button[data-mode="solve"] {
+            background-color: #2563eb;
+        }
+
+        button[data-mode="solve"]:hover {
+            background-color: #1d4ed8;
+        }
+
         #controls {
             display: flex;
             flex-wrap: wrap;
@@ -48,6 +64,17 @@
             margin: 0 auto;
         }
 
+        #preset-row,
+        #moves-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        #preset-input,
         #moves-input {
             width: min(320px, 90vw);
             padding: 8px;
@@ -71,8 +98,14 @@
         
         <!-- 操作用UI -->
         <div id="controls">
-            <input id="moves-input" type="text" value="R U R' U'" aria-label="操作記法">
-            <button id="analyze-button" type="button">解析</button>
+            <div id="preset-row">
+                <input id="preset-input" type="text" value="" placeholder="プリセット操作" aria-label="プリセット操作">
+                <button id="mode-toggle" type="button" data-mode="scramble" aria-pressed="false">モード: スクランブル</button>
+            </div>
+            <div id="moves-row">
+                <input id="moves-input" type="text" value="R U R' U'" aria-label="操作記法">
+                <button id="analyze-button" type="button">解析</button>
+            </div>
             <button id="play-button" type="button">再生</button>
             <input id="seek-bar" type="range" min="0" max="1000" value="0" aria-label="シークバー">
             <span id="seek-label">0%</span>
@@ -89,7 +122,7 @@
         {
             "imports": {
                 "three": "https://cdn.jsdelivr.net/npm/three@0.175.0/build/three.module.js",
-                "OrbitControls": "https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/controls/OrbitControls.js"
+                "OrbitControls": "https://cdn.jsdelivr.net/npm/three@0.175.0/examples/jsm/controls/OrbitControls.js"
             }
         }
     </script>
