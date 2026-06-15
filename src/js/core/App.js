@@ -4,11 +4,11 @@ import { CubeManager } from '../components/CubeManager.js';
 import { ClassDataMediator } from '../components/ClassDataMediator.js';
 import { CameraController } from '../controls/CameraControls.js';
 import { SeekBarController } from '../controls/SeekBarController.js';
+import { AppControls, PLAYBACK_MODES } from '../controls/AppControls.js';
 import { RubikNotationAnalyzer } from '../utils/RubikNotationAnalyzer.js';
 import { CAMERA_CONFIG } from '../utils/Constants.js';
 
 const DEFAULT_PLAYBACK_SECONDS = 5;
-const SEEK_PERCENT_SCALE = 100;
 
 export class App {
     
@@ -30,10 +30,18 @@ export class App {
         this.cubeManager.addAllCubesToScene(this.sceneManager.scene);
 
         this.operationSequence = [];
+        this.sequenceStates = [ClassDataMediator.createIdentityState()];
         this.seekPos = 0;
         this.seekBar = new SeekBarController(DEFAULT_PLAYBACK_SECONDS);
-        this.setupControls();
-        this.loadMoves(this.movesInput.value);
+        this.controls = new AppControls({
+            onAnalyze: request => this.loadMoves(request),
+            onModeChange: request => this.loadMoves(request),
+            onPlayToggle: () => this.togglePlay(),
+            onSeek: progress => this.onSeek(progress),
+            onSeekDragStart: () => this.startSeekDrag(),
+            onSeekDragEnd: () => this.endSeekDrag()
+        });
+        this.loadMoves(this.controls.getRequest());
         window.addEventListener('resize', () => this.handleResize());  
         this.animate();
     }
@@ -77,78 +85,68 @@ export class App {
         this.camera.updateProjectionMatrix();
     }
     
-    setupControls() {
-        this.movesInput = document.getElementById('moves-input');
-        this.analyzeButton = document.getElementById('analyze-button');
-        this.playButton = document.getElementById('play-button');
-        this.seekBarInput = document.getElementById('seek-bar');
-        this.seekLabel = document.getElementById('seek-label');
-        this.statusMessage = document.getElementById('status-message');
-
-        this.analyzeButton.addEventListener('click', () => {
-            this.loadMoves(this.movesInput.value);
-        });
-
-        this.movesInput.addEventListener('keydown', event => {
-            if (event.key === 'Enter') {
-                this.loadMoves(this.movesInput.value);
-            }
-        });
-
-        this.playButton.addEventListener('click', () => {
-            this.seekBar.togglePlay();
-            this.updatePlayButton();
-        });
-
-        this.seekBarInput.addEventListener('input', event => {
-            this.seekBar.progress = Number(event.target.value) / Number(event.target.max);
-            this.onSeek(this.seekBar.progress);
-        });
-
-        this.seekBarInput.addEventListener('pointerdown', () => {
-            this.seekBar.setDragging(true);
-            this.updatePlayButton();
-        });
-
-        window.addEventListener('pointerup', () => {
-            this.seekBar.setDragging(false);
-        });
-    }
-
-    loadMoves(text) {
+    loadMoves({ presetText, movesText, mode }) {
         try {
-            this.operationSequence = RubikNotationAnalyzer.analyze(text);
+            const presetSequence = RubikNotationAnalyzer.analyze(presetText);
+            this.operationSequence = RubikNotationAnalyzer.analyze(movesText);
+            const initialState = this.createInitialState(presetSequence, this.operationSequence, mode);
+            this.sequenceStates = ClassDataMediator.computeSequence(this.operationSequence, initialState);
             const totalDuration = Math.max(this.operationSequence.length, 1);
             this.seekBar = new SeekBarController(totalDuration);
             this.onSeek(0);
-            this.setStatus(`${this.operationSequence.length}手を読み込みました`);
+            this.controls.setStatus(this.createStatusMessage(presetSequence.length, this.operationSequence.length, mode));
             this.updatePlayButton();
         } catch (error) {
-            this.setStatus(error.message);
+            this.controls.setStatus(error.message);
         }
+    }
+
+    createInitialState(presetSequence, operationSequence, mode) {
+        const presetState = ClassDataMediator.getFinalState(presetSequence);
+
+        if (mode === PLAYBACK_MODES.SOLVE) {
+            const operationState = ClassDataMediator.getFinalState(operationSequence);
+            return presetState.compose(operationState.inverse());
+        }
+
+        return presetState;
+    }
+
+    createStatusMessage(presetCount, operationCount, mode) {
+        const modeLabel = mode === PLAYBACK_MODES.SOLVE ? 'ソルブ' : 'スクランブル';
+        const presetLabel = presetCount > 0 ? ` / プリセット${presetCount}手` : '';
+        return `${modeLabel}: ${operationCount}手を読み込みました${presetLabel}`;
+    }
+
+    togglePlay() {
+        this.seekBar.togglePlay();
+        this.updatePlayButton();
+    }
+
+    startSeekDrag() {
+        this.seekBar.setDragging(true);
+        this.updatePlayButton();
+    }
+
+    endSeekDrag() {
+        this.seekBar.setDragging(false);
     }
 
     onSeek(position) {
         this.seekPos = Math.min(Math.max(position, 0), 1);
         this.seekBar.progress = this.seekPos;
 
-        const context = ClassDataMediator.getSegment(this.seekPos, this.operationSequence);
+        const context = ClassDataMediator.getSegment(this.seekPos, this.operationSequence, this.sequenceStates);
         this.cubeManager.rotateFromState(context.from, context.rotationConfig, context.progress);
         this.updateSeekUi();
     }
 
     updateSeekUi() {
-        const max = Number(this.seekBarInput.max);
-        this.seekBarInput.value = Math.round(this.seekPos * max);
-        this.seekLabel.textContent = `${Math.round(this.seekPos * SEEK_PERCENT_SCALE)}%`;
+        this.controls.updateSeek(this.seekPos);
     }
 
     updatePlayButton() {
-        this.playButton.textContent = this.seekBar.isPlaying ? '停止' : '再生';
-    }
-
-    setStatus(message) {
-        this.statusMessage.textContent = message;
+        this.controls.updatePlayButton(this.seekBar.isPlaying);
     }
     
     animate = () => {
