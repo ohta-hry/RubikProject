@@ -1,0 +1,297 @@
+/* ==========================================================
+   Rubik Notation Tool — モバイル前提レイアウト
+   配色は tool2-varA-warm.html 準拠（Three.js背景のみ既存の #f0f0f0）
+   ========================================================== */
+:root {
+    --bg: #fafaf8;
+    --surface: #ffffff;
+    --panel: #f4f3ef;
+    --border: #e0ddd6;
+    --accent: #c8522a;
+    --accent2: #2a6cc8;
+    --text: #1a1915;
+    --muted: #8a8880;
+    --stage-bg: #f0f0f0;
+
+    --font: 'Georgia', 'Noto Serif JP', serif;
+    --mono: 'Courier New', monospace;
+
+    /* 縦方向の比率（具体的なpxは使わない） */
+    --stage-ratio: 37%;      /* 3Dビュー：画面の1/3よりやや大きく */
+    --player-max: 16%;       /* 再生バー：1/6以下 */
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 13px;
+    overscroll-behavior: none;
+}
+
+button { font: inherit; color: inherit; -webkit-tap-highlight-color: transparent; }
+
+:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
+
+/* ---------- 全体：縦積み ---------- */
+.app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    max-width: 640px;          /* レスポンシブ対応までは中央寄せで暫定 */
+    margin: 0 auto;
+    background: var(--bg);
+}
+
+/* ---------- ヘッダー ---------- */
+.header {
+    flex: 0 0 auto;
+    padding: 10px 16px 8px;
+    padding-top: calc(10px + env(safe-area-inset-top, 0px));
+    background: var(--surface);
+    border-bottom: 2px solid var(--text);
+}
+.header-title {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+
+/* ---------- 3Dビュー ---------- */
+.stage {
+    flex: 0 0 var(--stage-ratio);
+    min-height: 0;
+    position: relative;
+    background: var(--stage-bg);
+}
+#canvas-container {
+    position: absolute;
+    inset: 0;
+}
+#canvas-container canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* ---------- 再生バー ---------- */
+.player {
+    flex: 0 1 auto;
+    max-height: var(--player-max);
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    border-top: 2px solid var(--border);
+}
+
+/* シークバー：インク1色＋罫線色のみ */
+.seek {
+    --p: 0%;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 24px;
+    background: transparent;
+    cursor: pointer;
+    touch-action: pan-y;
+}
+.seek::-webkit-slider-runnable-track {
+    height: 3px;
+    border-radius: 2px;
+    background: linear-gradient(to right, var(--text) var(--p), var(--border) var(--p));
+}
+.seek::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    margin-top: -5.5px;
+    border-radius: 50%;
+    border: none;
+    background: var(--text);
+}
+.seek::-moz-range-track {
+    height: 3px;
+    border-radius: 2px;
+    background: var(--border);
+}
+.seek::-moz-range-progress {
+    height: 3px;
+    border-radius: 2px;
+    background: var(--text);
+}
+.seek::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: none;
+    background: var(--text);
+}
+
+/* メディア操作 */
+.transport {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 28px;
+}
+.icon-btn {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 36px;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: var(--text);
+    cursor: pointer;
+}
+.icon-btn svg { width: 20px; height: 20px; fill: currentColor; }
+.icon-btn-main svg { width: 24px; height: 24px; }
+.icon-btn:active { background: var(--panel); }
+
+/* ▶ / ⏸ の切り替え */
+.icon-btn-main .icon-pause { display: none; }
+.icon-btn-main[data-state="playing"] .icon-play { display: none; }
+.icon-btn-main[data-state="playing"] .icon-pause { display: block; }
+
+/* ---------- 入力欄 ---------- */
+.dock {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+}
+
+.dock-tabs {
+    flex: 0 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+}
+.dock-tab {
+    padding: 10px 2px 9px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color .15s, border-color .15s;
+}
+.dock-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    background: var(--surface);
+}
+
+.dock-body {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 12px 16px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+}
+.page { display: none; }
+.page.active { display: block; }
+
+/* ---------- 入力ページ ---------- */
+.text-input {
+    width: 100%;
+    min-width: 0;
+    padding: 9px 10px;
+    font-family: var(--mono);
+    font-size: 16px;            /* iOSの自動ズーム防止 */
+    color: var(--text);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    outline: none;
+}
+.text-input:focus { border-color: var(--accent); }
+
+/* プリセット（控えめな折りたたみ） */
+.preset { margin-bottom: 6px; }
+.preset-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 2px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+.preset-caret {
+    display: inline-block;
+    font-size: 8px;
+    transition: transform .2s;
+}
+.preset-toggle[aria-expanded="true"] .preset-caret { transform: rotate(180deg); }
+.preset-toggle[aria-expanded="true"] { color: var(--text); }
+
+.preset-body {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows .2s ease;
+}
+.preset-body.open { grid-template-rows: 1fr; }
+.preset-inner { overflow: hidden; min-height: 0; }
+.preset-body.open .preset-inner { padding: 2px 0 8px; }
+
+/* メイン入力＋モード */
+.moves-row {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+.mode-btn {
+    flex: 0 0 auto;
+    width: 6.6em;               /* ラベルが変わっても幅が動かない */
+    padding: 0 6px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: #fff;
+    background: var(--accent);
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background .15s;
+}
+.mode-btn[data-mode="solve"] { background: var(--accent2); }
+
+.analyze-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 11px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .06em;
+    color: var(--bg);
+    background: var(--text);
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.analyze-btn:active { background: var(--accent); }
+
+.status {
+    margin-top: 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+}

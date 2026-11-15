@@ -2,120 +2,85 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Three.js 基本立方体</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 20px;
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-        }
-        
-        #container {
-            text-align: center;
-        }
-        
-        #canvas-container {
-            display: inline-block;
-            border: 2px solid #333;
-            margin: 20px 0;
-            background-color: white;
-        }
-        
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            margin: 5px;
-            cursor: pointer;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-        }
-        
-        button:hover {
-            background-color: #45a049;
-        }
-
-        button[data-mode="scramble"] {
-            background-color: #d97706;
-        }
-
-        button[data-mode="scramble"]:hover {
-            background-color: #b45309;
-        }
-
-        button[data-mode="solve"] {
-            background-color: #2563eb;
-        }
-
-        button[data-mode="solve"]:hover {
-            background-color: #1d4ed8;
-        }
-
-        #controls {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        #preset-row,
-        #moves-row {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            width: 100%;
-        }
-
-        #preset-input,
-        #moves-input {
-            width: min(320px, 90vw);
-            padding: 8px;
-            font-size: 16px;
-        }
-
-        #seek-bar {
-            width: min(480px, 90vw);
-        }
-
-        #status-message {
-            width: 100%;
-            min-height: 1.5em;
-            color: #333;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Rubik Notation Tool</title>
+    <link rel="stylesheet" href="./src/css/style.css">
 </head>
 <body>
-    <div id="container">
-        <h1>Three.js 基本立方体</h1>
-        
-        <!-- 操作用UI -->
-        <div id="controls">
-            <div id="preset-row">
-                <input id="preset-input" type="text" value="" placeholder="プリセット操作" aria-label="プリセット操作">
-                <button id="mode-toggle" type="button" data-mode="scramble" aria-pressed="false">モード: スクランブル</button>
+    <div class="app">
+
+        <!-- ヘッダー -->
+        <header class="header">
+            <h1 class="header-title">Rubik Notation Tool</h1>
+        </header>
+
+        <!-- Three.js 表示エリア（高さは画面比率で決定） -->
+        <section class="stage" aria-label="3Dビュー">
+            <div id="canvas-container"></div>
+        </section>
+
+        <!-- 再生バー -->
+        <section class="player" aria-label="再生コントロール">
+            <input id="seek-bar" class="seek" type="range" min="0" max="1000" value="0" aria-label="シークバー">
+            <div class="transport">
+                <button id="prev-button" class="icon-btn" type="button" aria-label="最初へ">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h2v14H6zM20 5v14L9.5 12z"/></svg>
+                </button>
+                <button id="play-button" class="icon-btn icon-btn-main" type="button" data-state="paused" aria-label="再生">
+                    <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15L19.5 12z"/></svg>
+                    <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4.5v14H6zM13.5 5H18v14h-4.5z"/></svg>
+                </button>
+                <button id="next-button" class="icon-btn" type="button" aria-label="最後へ">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 5h2v14h-2zM4 5l10.5 7L4 19z"/></svg>
+                </button>
             </div>
-            <div id="moves-row">
-                <input id="moves-input" type="text" value="R U R' U'" aria-label="操作記法">
-                <button id="analyze-button" type="button">解析</button>
+        </section>
+
+        <!-- 入力欄 -->
+        <section class="dock" aria-label="入力パネル">
+            <div class="dock-tabs" id="dock-tabs" role="tablist">
+                <button class="dock-tab active" type="button" role="tab" id="tab-input" aria-controls="page-input" aria-selected="true" data-page="input">入力</button>
+                <button class="dock-tab" type="button" role="tab" id="tab-analysis" aria-controls="page-analysis" aria-selected="false" data-page="analysis">分析</button>
+                <button class="dock-tab" type="button" role="tab" id="tab-marker" aria-controls="page-marker" aria-selected="false" data-page="marker">マーカー</button>
+                <button class="dock-tab" type="button" role="tab" id="tab-settings" aria-controls="page-settings" aria-selected="false" data-page="settings">設定</button>
             </div>
-            <button id="play-button" type="button">再生</button>
-            <input id="seek-bar" type="range" min="0" max="1000" value="0" aria-label="シークバー">
-            <span id="seek-label">0%</span>
-            <div id="status-message"></div>
-        </div>
-        
-        <!-- Three.js用のcanvas -->
-        <div id="canvas-container"></div>
-        
-        <p>マウスでドラッグして立方体を回転させることができます</p>
+
+            <div class="dock-body">
+
+                <!-- 入力ページ -->
+                <div class="page active" id="page-input" role="tabpanel" aria-labelledby="tab-input">
+
+                    <!-- プリセット（既定は折りたたみ） -->
+                    <div class="preset" id="preset">
+                        <button id="preset-toggle" class="preset-toggle" type="button" aria-expanded="false" aria-controls="preset-body">
+                            <span class="preset-caret" aria-hidden="true">▼</span>プリセット
+                        </button>
+                        <div id="preset-body" class="preset-body">
+                            <div class="preset-inner">
+                                <input id="preset-input" class="text-input" type="text" value="" placeholder="プリセット操作" aria-label="プリセット操作" autocomplete="off" autocapitalize="off" spellcheck="false">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- メイン入力 -->
+                    <div class="moves-row">
+                        <input id="moves-input" class="text-input" type="text" value="R U R' U'" aria-label="操作記法" autocomplete="off" autocapitalize="off" spellcheck="false">
+                        <button id="mode-toggle" class="mode-btn" type="button" data-mode="scramble" aria-pressed="false">スクランブル</button>
+                    </div>
+
+                    <button id="analyze-button" class="analyze-btn" type="button">解析</button>
+
+                    <!-- エラー時のみ表示 -->
+                    <div id="status-message" class="status" role="alert" hidden></div>
+                </div>
+
+                <!-- 未定ページ -->
+                <div class="page" id="page-analysis" role="tabpanel" aria-labelledby="tab-analysis"></div>
+                <div class="page" id="page-marker" role="tabpanel" aria-labelledby="tab-marker"></div>
+                <div class="page" id="page-settings" role="tabpanel" aria-labelledby="tab-settings"></div>
+
+            </div>
+        </section>
     </div>
 
     <script type="importmap">
@@ -126,7 +91,7 @@
             }
         }
     </script>
-    
+
     <!-- モジュールの読み込み -->
     <script type="module" src="./src/js/main.js"></script>
 </body>

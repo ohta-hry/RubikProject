@@ -8,13 +8,13 @@ export const CAMERA_CONFIG = {
     },
     CONTROLS: {
         ENABLE_DAMPING: true,
-        DAMPING_FACTOR: 0.05,
-        ROTATE_SPEED: 1.0,
+        DAMPING_FACTOR: 1.0,
+        ROTATE_SPEED: 0.25,
         ZOOM_SPEED: 1.0,
         PAN_SPEED: 1.0,
         MIN_DISTANCE: 3,
         MAX_DISTANCE: 15,
-        INITIAL_POSITION: { x: 5, y: 5, z: 5 },
+        INITIAL_POSITION: { x: 3.5, y: 3, z: 3.5 },
         TARGET: { x: 0, y: 0, z: 0 }
     }
 };
