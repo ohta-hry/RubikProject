@@ -1,0 +1,361 @@
+/* ==========================================================
+   Rubik Notation Tool — モバイル前提レイアウト
+   配色は tool2-varA-warm.html 準拠（Three.js背景のみ既存の #f0f0f0）
+   ========================================================== */
+:root {
+    --bg: #fafaf8;
+    --surface: #ffffff;
+    --panel: #f4f3ef;
+    --border: #e0ddd6;
+    --accent: #c8522a;
+    --accent2: #2a6cc8;
+    --accent2-soft: #5b92dc;     /* ソルブボタン用（accent2をやや薄く） */
+    --text: #1a1915;
+    --muted: #8a8880;
+    --stage-bg: #f0f0f0;
+
+    --font: 'Georgia', 'Noto Serif JP', serif;
+    --mono: 'Courier New', monospace;
+
+    /* 縦方向の比率（具体的なpxは使わない） */
+    --stage-ratio: 37%;      /* 3Dビュー：画面の1/3よりやや大きく */
+    --player-max: 16%;       /* 再生バー：1/6以下 */
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 13px;
+    overscroll-behavior: none;
+}
+
+button { font: inherit; color: inherit; -webkit-tap-highlight-color: transparent; }
+
+:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
+
+/* ---------- 全体：縦積み ---------- */
+.app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    max-width: 640px;          /* レスポンシブ対応までは中央寄せで暫定 */
+    margin: 0 auto;
+    background: var(--bg);
+}
+
+/* ---------- ヘッダー ---------- */
+.header {
+    flex: 0 0 auto;
+    padding: 10px 16px 8px;
+    padding-top: calc(10px + env(safe-area-inset-top, 0px));
+    background: var(--surface);
+    border-bottom: 2px solid var(--text);
+}
+.header-title {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+
+/* ---------- 3Dビュー ---------- */
+.stage {
+    flex: 0 0 var(--stage-ratio);
+    min-height: 0;
+    position: relative;
+    background: var(--stage-bg);
+}
+#canvas-container {
+    position: absolute;
+    inset: 0;
+}
+#canvas-container canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* ---------- 再生バー ---------- */
+.player {
+    flex: 0 1 auto;
+    max-height: var(--player-max);
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    border-top: 2px solid var(--border);
+}
+
+/* シークバー：インク1色＋罫線色のみ */
+.seek {
+    --p: 0%;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 24px;
+    background: transparent;
+    cursor: pointer;
+    touch-action: pan-y;
+}
+.seek::-webkit-slider-runnable-track {
+    height: 3px;
+    border-radius: 2px;
+    background: linear-gradient(to right, var(--text) var(--p), var(--border) var(--p));
+}
+.seek::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    margin-top: -5.5px;
+    border-radius: 50%;
+    border: none;
+    background: var(--text);
+}
+.seek::-moz-range-track {
+    height: 3px;
+    border-radius: 2px;
+    background: var(--border);
+}
+.seek::-moz-range-progress {
+    height: 3px;
+    border-radius: 2px;
+    background: var(--text);
+}
+.seek::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: none;
+    background: var(--text);
+}
+
+/* メディア操作 */
+.transport {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 28px;
+}
+.icon-btn {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 36px;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: var(--text);
+    cursor: pointer;
+}
+.icon-btn svg { width: 20px; height: 20px; fill: currentColor; }
+.icon-btn-main svg { width: 24px; height: 24px; }
+.icon-btn:active { background: var(--panel); }
+
+/* ▶ / ⏸ の切り替え */
+.icon-btn-main .icon-pause { display: none; }
+.icon-btn-main[data-state="playing"] .icon-play { display: none; }
+.icon-btn-main[data-state="playing"] .icon-pause { display: block; }
+
+/* ---------- 入力欄 ---------- */
+.dock {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+}
+
+.dock-tabs {
+    flex: 0 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+}
+.dock-tab {
+    padding: 10px 2px 9px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color .15s, border-color .15s;
+}
+.dock-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    background: var(--surface);
+}
+
+.dock-body {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 12px 16px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+}
+.page { display: none; }
+.page.active { display: block; }
+
+/* ---------- 入力ページ ---------- */
+.text-input {
+    width: 100%;
+    min-width: 0;
+    padding: 9px 10px;
+    font-family: var(--mono);
+    font-size: 16px;            /* iOSの自動ズーム防止 */
+    color: var(--text);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    outline: none;
+}
+.text-input:focus { border-color: var(--accent); }
+
+/* 複数行テキストボックス（高さは JS で自動調整） */
+textarea.text-input {
+    display: block;
+    resize: none;
+    overflow-y: auto;
+    line-height: 1.5;
+    max-height: 11em;          /* 約7行で頭打ち、以降は内部スクロール */
+}
+
+/* 先行動作の開閉 ＋ モード切替 */
+.head-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+.preset-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 2px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+.preset-caret {
+    display: inline-block;
+    font-size: 8px;
+    transition: transform .2s;
+}
+.preset-toggle[aria-expanded="true"] .preset-caret { transform: rotate(180deg); }
+.preset-toggle[aria-expanded="true"] { color: var(--text); }
+
+.preset-body {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows .2s ease;
+}
+.preset-body.open { grid-template-rows: 1fr; }
+.preset-inner { overflow: hidden; min-height: 0; }
+.preset-body.open .preset-inner { padding: 2px 0 8px; }
+
+/* ラベル（先行動作と同書式） */
+.field-label {
+    display: block;
+    padding: 4px 2px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+}
+
+/* モードボタン：スクランブル=オレンジ / ソルブ=薄い青、アイコンは白線 */
+.mode-btn {
+    --mode-color: var(--accent);
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 84px;
+    height: 44px;               /* 初期状態のテキストボックスと同じ高さ */
+    padding: 0 10px;
+    color: #fff;
+    background: var(--mode-color);
+    border: none;
+    border-radius: 3px;
+    box-shadow: 0 1px 0 rgba(26, 25, 21, .18);
+    cursor: pointer;
+    transition: background .15s, transform .1s;
+    -webkit-tap-highlight-color: transparent;
+}
+.mode-btn[data-mode="solve"] { --mode-color: var(--accent2-soft); }
+.mode-btn:active { transform: scale(.96); }
+.mode-icon { grid-area: 1 / 1; width: 100%; height: 100%; }
+.mode-icon .badge { fill: var(--mode-color); transition: fill .15s; }
+.mode-btn[data-mode="scramble"] .icon-solve,
+.mode-btn[data-mode="solve"] .icon-scramble { display: none; }
+
+/* 適用 : キーボード = 2 : 1 */
+.action-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+.analyze-btn {
+    flex: 2 1 0;
+    padding: 11px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .06em;
+    color: var(--bg);
+    background: var(--text);
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.analyze-btn:active { background: var(--accent); }
+
+.keyboard-btn {
+    flex: 1 1 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 11px 4px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.keyboard-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+.keyboard-btn[aria-pressed="true"] {
+    color: var(--accent2);
+    border-color: var(--accent2);
+    background: #eef3fc;
+}
+
+.status {
+    margin-top: 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+}

@@ -4,6 +4,7 @@ import { CubeManager } from '../components/CubeManager.js';
 import { ClassDataMediator } from '../components/ClassDataMediator.js';
 import { CameraController } from '../controls/CameraControls.js';
 import { SeekBarController } from '../controls/SeekBarController.js';
+import { TabController } from '../controls/TabController.js';
 import { AppControls, PLAYBACK_MODES } from '../controls/AppControls.js';
 import { RubikNotationAnalyzer } from '../utils/RubikNotationAnalyzer.js';
 import { CAMERA_CONFIG } from '../utils/Constants.js';
@@ -20,6 +21,7 @@ export class App {
         this.sceneManager = new SceneManager();
         this.cubeManager = new CubeManager();
 
+        this.container = document.getElementById('canvas-container');
         this.setupCamera();
         this.setupRenderer();
         this.sceneManager.setupLights();
@@ -33,6 +35,7 @@ export class App {
         this.sequenceStates = [ClassDataMediator.createIdentityState()];
         this.seekPos = 0;
         this.seekBar = new SeekBarController(DEFAULT_PLAYBACK_SECONDS);
+        this.tabs = new TabController(document.getElementById('dock-tabs'));
         this.controls = new AppControls({
             onAnalyze: request => this.loadMoves(request),
             onModeChange: request => this.loadMoves(request),
@@ -42,14 +45,15 @@ export class App {
             onSeekDragEnd: () => this.endSeekDrag()
         });
         this.loadMoves(this.controls.getRequest());
-        window.addEventListener('resize', () => this.handleResize());  
+        new ResizeObserver(() => this.handleResize()).observe(this.container);
+        this.handleResize();
         this.animate();
     }
 
     setupCamera() {
         this.camera = new THREE.PerspectiveCamera(
             CAMERA_CONFIG.PERSPECTIVE.FOV,
-            window.innerWidth / window.innerHeight,
+            1,
             CAMERA_CONFIG.PERSPECTIVE.NEAR,
             CAMERA_CONFIG.PERSPECTIVE.FAR
         );
@@ -67,20 +71,21 @@ export class App {
 
     setupRenderer() {
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
-        this.renderer.setSize(
-            window.innerWidth,
-            window.innerHeight
-        );
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        document.getElementById('canvas-container').appendChild(this.renderer.domElement);
+        this.container.appendChild(this.renderer.domElement);
     }
 
     handleResize() {
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-        
-        this.renderer.setSize(width, height);
+        const width = this.container.clientWidth;
+        const height = this.container.clientHeight;
+        if (width === 0 || height === 0) {
+            return;
+        }
+
+        // 表示サイズはCSS（親コンテナ比率）に任せる
+        this.renderer.setSize(width, height, false);
         this.camera.aspect = width / height;
         this.camera.updateProjectionMatrix();
     }
@@ -94,7 +99,7 @@ export class App {
             const totalDuration = Math.max(this.operationSequence.length, 1);
             this.seekBar = new SeekBarController(totalDuration);
             this.onSeek(0);
-            this.controls.setStatus(this.createStatusMessage(presetSequence.length, this.operationSequence.length, mode));
+            this.controls.setStatus('');
             this.updatePlayButton();
         } catch (error) {
             this.controls.setStatus(error.message);
@@ -110,12 +115,6 @@ export class App {
         }
 
         return presetState;
-    }
-
-    createStatusMessage(presetCount, operationCount, mode) {
-        const modeLabel = mode === PLAYBACK_MODES.SOLVE ? 'ソルブ' : 'スクランブル';
-        const presetLabel = presetCount > 0 ? ` / プリセット${presetCount}手` : '';
-        return `${modeLabel}: ${operationCount}手を読み込みました${presetLabel}`;
     }
 
     togglePlay() {
