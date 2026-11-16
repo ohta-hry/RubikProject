@@ -23,6 +23,7 @@ export class AppControls {
         this.seekBarInput = document.getElementById('seek-bar');
         this.presetToggle = document.getElementById('preset-toggle');
         this.presetBody = document.getElementById('preset-body');
+        this.keyboardButton = document.getElementById('keyboard-button');
         this.statusMessage = document.getElementById('status-message');
 
         this.#bindEvents();
@@ -34,12 +35,23 @@ export class AppControls {
             this.callbacks.onAnalyze(this.getRequest());
         });
 
+        // 改行できる入力欄：内容に合わせて高さを自動調整。Ctrl/Cmd+Enterで適用
         [this.presetInput, this.movesInput].forEach(input => {
+            input.addEventListener('input', () => this.#autosize(input));
             input.addEventListener('keydown', event => {
-                if (event.key === 'Enter') {
+                if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+                    event.preventDefault();
                     this.callbacks.onAnalyze(this.getRequest());
                 }
             });
+            this.#autosize(input);
+        });
+
+        // 将来のボタン式キーボード表示用（現在は表示状態の切り替えのみ）
+        this.keyboardButton.addEventListener('click', () => {
+            const show = this.keyboardButton.getAttribute('aria-pressed') !== 'true';
+            this.keyboardButton.setAttribute('aria-pressed', String(show));
+            this.callbacks.onKeyboardToggle?.(show);
         });
 
         this.modeToggle.addEventListener('click', () => {
@@ -67,6 +79,7 @@ export class AppControls {
             const isOpen = this.presetToggle.getAttribute('aria-expanded') === 'true';
             this.presetToggle.setAttribute('aria-expanded', String(!isOpen));
             this.presetBody.classList.toggle('open', !isOpen);
+            this.#autosize(this.presetInput);
         });
 
         this.seekBarInput.addEventListener('input', event => {
@@ -94,7 +107,7 @@ export class AppControls {
 
     updateModeToggle() {
         this.modeToggle.dataset.mode = this.mode;
-        this.modeToggle.textContent = MODE_LABELS[this.mode];
+        this.modeToggle.setAttribute('aria-label', MODE_LABELS[this.mode]);
         this.modeToggle.setAttribute('aria-pressed', this.mode === PLAYBACK_MODES.SOLVE ? 'true' : 'false');
     }
 
@@ -102,6 +115,11 @@ export class AppControls {
         const max = Number(this.seekBarInput.max);
         this.seekBarInput.value = Math.round(position * max);
         this.#paintSeek(position);
+    }
+
+    #autosize(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = `${textarea.scrollHeight + textarea.offsetHeight - textarea.clientHeight}px`;
     }
 
     #paintSeek(position) {

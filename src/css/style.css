@@ -9,6 +9,7 @@
     --border: #e0ddd6;
     --accent: #c8522a;
     --accent2: #2a6cc8;
+    --accent2-soft: #5b92dc;     /* ソルブボタン用（accent2をやや薄く） */
     --text: #1a1915;
     --muted: #8a8880;
     --stage-bg: #f0f0f0;
@@ -222,8 +223,22 @@ button { font: inherit; color: inherit; -webkit-tap-highlight-color: transparent
 }
 .text-input:focus { border-color: var(--accent); }
 
-/* プリセット（控えめな折りたたみ） */
-.preset { margin-bottom: 6px; }
+/* 複数行テキストボックス（高さは JS で自動調整） */
+textarea.text-input {
+    display: block;
+    resize: none;
+    overflow-y: auto;
+    line-height: 1.5;
+    max-height: 11em;          /* 約7行で頭打ち、以降は内部スクロール */
+}
+
+/* 先行動作の開閉 ＋ モード切替 */
+.head-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
 .preset-toggle {
     display: inline-flex;
     align-items: center;
@@ -253,30 +268,48 @@ button { font: inherit; color: inherit; -webkit-tap-highlight-color: transparent
 .preset-inner { overflow: hidden; min-height: 0; }
 .preset-body.open .preset-inner { padding: 2px 0 8px; }
 
-/* メイン入力＋モード */
-.moves-row {
-    display: flex;
-    gap: 8px;
-    align-items: stretch;
-}
-.mode-btn {
-    flex: 0 0 auto;
-    width: 6.6em;               /* ラベルが変わっても幅が動かない */
-    padding: 0 6px;
+/* ラベル（先行動作と同書式） */
+.field-label {
+    display: block;
+    padding: 4px 2px;
     font-family: var(--mono);
-    font-size: 12px;
+    font-size: 11px;
+    color: var(--muted);
+}
+
+/* モードボタン：スクランブル=オレンジ / ソルブ=薄い青、アイコンは白線 */
+.mode-btn {
+    --mode-color: var(--accent);
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 84px;
+    height: 44px;               /* 初期状態のテキストボックスと同じ高さ */
+    padding: 0 10px;
     color: #fff;
-    background: var(--accent);
+    background: var(--mode-color);
     border: none;
     border-radius: 3px;
+    box-shadow: 0 1px 0 rgba(26, 25, 21, .18);
     cursor: pointer;
-    transition: background .15s;
+    transition: background .15s, transform .1s;
+    -webkit-tap-highlight-color: transparent;
 }
-.mode-btn[data-mode="solve"] { background: var(--accent2); }
+.mode-btn[data-mode="solve"] { --mode-color: var(--accent2-soft); }
+.mode-btn:active { transform: scale(.96); }
+.mode-icon { grid-area: 1 / 1; width: 100%; height: 100%; }
+.mode-icon .badge { fill: var(--mode-color); transition: fill .15s; }
+.mode-btn[data-mode="scramble"] .icon-solve,
+.mode-btn[data-mode="solve"] .icon-scramble { display: none; }
 
-.analyze-btn {
-    width: 100%;
+/* 適用 : キーボード = 2 : 1 */
+.action-row {
+    display: flex;
+    gap: 8px;
     margin-top: 10px;
+}
+.analyze-btn {
+    flex: 2 1 0;
     padding: 11px;
     font-family: var(--mono);
     font-size: 12px;
@@ -288,6 +321,37 @@ button { font: inherit; color: inherit; -webkit-tap-highlight-color: transparent
     cursor: pointer;
 }
 .analyze-btn:active { background: var(--accent); }
+
+.keyboard-btn {
+    flex: 1 1 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 11px 4px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.keyboard-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+.keyboard-btn[aria-pressed="true"] {
+    color: var(--accent2);
+    border-color: var(--accent2);
+    background: #eef3fc;
+}
 
 .status {
     margin-top: 10px;

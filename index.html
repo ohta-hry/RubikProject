@@ -50,25 +50,54 @@
                 <!-- 入力ページ -->
                 <div class="page active" id="page-input" role="tabpanel" aria-labelledby="tab-input">
 
-                    <!-- プリセット（既定は折りたたみ） -->
-                    <div class="preset" id="preset">
+                    <!-- 先行動作の開閉 ＋ モード切替 -->
+                    <div class="head-row">
                         <button id="preset-toggle" class="preset-toggle" type="button" aria-expanded="false" aria-controls="preset-body">
-                            <span class="preset-caret" aria-hidden="true">▼</span>プリセット
+                            <span class="preset-caret" aria-hidden="true">▼</span>先行動作
                         </button>
-                        <div id="preset-body" class="preset-body">
-                            <div class="preset-inner">
-                                <input id="preset-input" class="text-input" type="text" value="" placeholder="プリセット操作" aria-label="プリセット操作" autocomplete="off" autocapitalize="off" spellcheck="false">
-                            </div>
+                        <button id="mode-toggle" class="mode-btn" type="button" data-mode="scramble" aria-label="スクランブル" aria-pressed="false">
+                            <svg class="mode-icon icon-scramble" viewBox="4 3 102 56" fill="none" aria-hidden="true">
+      <g stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+        <path fill="#fff" fill-opacity=".30" d="M12 19 L34 7 L56 19 L34 31 Z"/>
+        <path fill="#fff" fill-opacity=".12" d="M12 19 L34 31 L34 57 L12 45 Z"/>
+        <path d="M34 31 L56 19 L56 45 L34 57 Z"/>
+      </g>
+      <circle class="badge" cx="57" cy="15" r="11" stroke="currentColor" stroke-width="3"/>
+      <path d="M51 15 L55 19 L63 10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M70 36 H99 M90 26 L99 36 L90 46" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+                            <svg class="mode-icon icon-solve" viewBox="6 3 102 56" fill="none" aria-hidden="true">
+      <path d="M8 36 H37 M28 26 L37 36 L28 46" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <g stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+        <path fill="#fff" fill-opacity=".30" d="M50 19 L72 7 L94 19 L72 31 Z"/>
+        <path fill="#fff" fill-opacity=".12" d="M50 19 L72 31 L72 57 L50 45 Z"/>
+        <path d="M72 31 L94 19 L94 45 L72 57 Z"/>
+      </g>
+      <circle class="badge" cx="95" cy="15" r="11" stroke="currentColor" stroke-width="3"/>
+      <path d="M89 15 L93 19 L101 10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+                        </button>
+                    </div>
+
+                    <!-- 先行動作（既定は折りたたみ） -->
+                    <div id="preset-body" class="preset-body">
+                        <div class="preset-inner">
+                            <textarea id="preset-input" class="text-input" rows="1" placeholder="先行動作" aria-label="先行動作" autocomplete="off" autocapitalize="off" spellcheck="false"></textarea>
                         </div>
                     </div>
 
-                    <!-- メイン入力 -->
-                    <div class="moves-row">
-                        <input id="moves-input" class="text-input" type="text" value="R U R' U'" aria-label="操作記法" autocomplete="off" autocapitalize="off" spellcheck="false">
-                        <button id="mode-toggle" class="mode-btn" type="button" data-mode="scramble" aria-pressed="false">スクランブル</button>
-                    </div>
+                    <!-- 回転動作 -->
+                    <label class="field-label" for="moves-input">回転動作</label>
+                    <textarea id="moves-input" class="text-input" rows="1" aria-label="回転動作" autocomplete="off" autocapitalize="off" spellcheck="false">R U R' U'</textarea>
 
-                    <button id="analyze-button" class="analyze-btn" type="button">解析</button>
+                    <!-- 適用 : キーボード = 2 : 1 -->
+                    <div class="action-row">
+                        <button id="analyze-button" class="analyze-btn" type="button">適用</button>
+                        <button id="keyboard-button" class="keyboard-btn" type="button" aria-pressed="false">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg>
+                            キーボード
+                        </button>
+                    </div>
 
                     <!-- エラー時のみ表示 -->
                     <div id="status-message" class="status" role="alert" hidden></div>
