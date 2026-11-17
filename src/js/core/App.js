@@ -8,6 +8,9 @@ import { TabController } from '../controls/TabController.js';
 import { AppControls, PLAYBACK_MODES } from '../controls/AppControls.js';
 import { RubikNotationAnalyzer } from '../utils/RubikNotationAnalyzer.js';
 import { CAMERA_CONFIG } from '../utils/Constants.js';
+import { fadeOutIn } from '../utils/Fade.js';
+
+const REPLAY_FADE_MS = 500;   // 最後から再生するときのフェードアウト／フェードイン各時間
 
 const DEFAULT_PLAYBACK_SECONDS = 5;
 
@@ -45,6 +48,7 @@ export class App {
             onSeekDragEnd: () => this.endSeekDrag()
         });
         this.loadMoves(this.controls.getRequest());
+        this.controls.markApplied();
         new ResizeObserver(() => this.handleResize()).observe(this.container);
         this.handleResize();
         this.animate();
@@ -98,7 +102,7 @@ export class App {
             this.sequenceStates = ClassDataMediator.computeSequence(this.operationSequence, initialState);
             const totalDuration = Math.max(this.operationSequence.length, 1);
             this.seekBar = new SeekBarController(totalDuration);
-            this.onSeek(0);
+            this.onSeek(1);            // 読み込み後は再生位置を最後に置く
             this.controls.setStatus('');
             this.updatePlayButton();
         } catch (error) {
@@ -118,6 +122,27 @@ export class App {
     }
 
     togglePlay() {
+        if (this.isFading) {
+            return;
+        }
+
+        // 最後まで再生済みの状態で再生 → フェードアウト／フェードインしながら最初へ戻ってから再生
+        if (!this.seekBar.isPlaying && this.seekPos >= 1) {
+            this.playFromStartWithFade();
+            return;
+        }
+
+        this.seekBar.togglePlay();
+        this.updatePlayButton();
+    }
+
+    async playFromStartWithFade() {
+        this.isFading = true;
+        try {
+            await fadeOutIn(this.container, REPLAY_FADE_MS, () => this.onSeek(0));
+        } finally {
+            this.isFading = false;
+        }
         this.seekBar.togglePlay();
         this.updatePlayButton();
     }

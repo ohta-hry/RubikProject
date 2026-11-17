@@ -17,6 +17,10 @@
         <!-- Three.js 表示エリア（高さは画面比率で決定） -->
         <section class="stage" aria-label="3Dビュー">
             <div id="canvas-container"></div>
+            <!-- 入力の反映待ち表示：3Dビューを暗くして Loading.. を出す -->
+            <div id="stage-veil" class="stage-veil" aria-live="polite" hidden>
+                <span class="veil-label">Loading..</span>
+            </div>
         </section>
 
         <!-- 再生バー -->
@@ -55,7 +59,7 @@
                         <button id="preset-toggle" class="preset-toggle" type="button" aria-expanded="false" aria-controls="preset-body">
                             <span class="preset-caret" aria-hidden="true">▼</span>先行動作
                         </button>
-                        <button id="mode-toggle" class="mode-btn" type="button" data-mode="scramble" aria-label="スクランブル" aria-pressed="false">
+                        <button id="mode-toggle" class="mode-btn" type="button" data-mode="solve" aria-label="ソルブ" aria-pressed="true">
                             <svg class="mode-icon icon-scramble" viewBox="4 3 102 56" fill="none" aria-hidden="true">
       <g stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
         <path fill="#fff" fill-opacity=".30" d="M12 19 L34 7 L56 19 L34 31 Z"/>
@@ -90,22 +94,21 @@
                     <label class="field-label" for="moves-input">回転動作</label>
                     <textarea id="moves-input" class="text-input" rows="1" aria-label="回転動作" autocomplete="off" autocapitalize="off" spellcheck="false">R U R' U'</textarea>
 
-                    <!-- 適用 : キーボード = 2 : 1 -->
+                    <!-- キーボードボタン（入力は1秒変化がなければ自動反映） -->
                     <div id="action-row" class="action-row">
-                        <button id="analyze-button" class="analyze-btn" type="button">適用</button>
                         <button id="keyboard-button" class="keyboard-btn" type="button" aria-pressed="false" aria-controls="rotation-keyboard">
                             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg>
                             キーボード
                         </button>
                     </div>
 
-                    <!-- 回転動作キーボード（キーボードボタンで 適用／キーボード と入れ替わる） -->
+                    <!-- 回転動作キーボード（キーボードボタンと入れ替わる） -->
                     <div id="rotation-keyboard" class="kb" role="group" aria-label="回転動作キーボード" hidden>
                         <div class="kb-pad">
                             <svg class="kb-cube" viewBox="-127.5 -127.5 255 255" aria-hidden="true" focusable="false">
                                 <g class="kb-guides">
-                                    <line x1="-45.0" y1="-26.0" x2="-86.6" y2="-50.0"/>
-                                    <line x1="45.0" y1="-26.0" x2="86.6" y2="-50.0"/>
+                                    <line x1="-45.0" y1="-26.0" x2="-114.1" y2="-65.9"/>
+                                    <line x1="45.0" y1="-26.0" x2="114.1" y2="-65.9"/>
                                     <line x1="0.0" y1="52.0" x2="0.0" y2="100.0"/>
                                 </g>
                                 <path class="kb-cube-body" d="M-45.0 -26.0 L0.0 -52.0 L45.0 -26.0 L45.0 26.0 L0.0 52.0 L-45.0 26.0Z"/>
