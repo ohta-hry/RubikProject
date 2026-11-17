@@ -1,3 +1,5 @@
+import { RotationKeyboard } from './RotationKeyboard.js';
+
 export const PLAYBACK_MODES = {
     SCRAMBLE: 'scramble',
     SOLVE: 'solve'
@@ -24,7 +26,19 @@ export class AppControls {
         this.presetToggle = document.getElementById('preset-toggle');
         this.presetBody = document.getElementById('preset-body');
         this.keyboardButton = document.getElementById('keyboard-button');
+        this.actionRow = document.getElementById('action-row');
+        this.keyboardPanel = document.getElementById('rotation-keyboard');
+        this.keyboardClose = document.getElementById('keyboard-close');
+        this.inputPage = document.getElementById('page-input');
         this.statusMessage = document.getElementById('status-message');
+
+        this.rotationKeyboard = new RotationKeyboard({
+            panel: this.keyboardPanel,
+            inputs: [this.presetInput, this.movesInput],
+            fallbackInput: this.movesInput,
+            // 折りたたまれた先行動作欄には入力しない
+            isUsable: input => input !== this.presetInput || this.presetBody.classList.contains('open')
+        });
 
         this.#bindEvents();
         this.updateModeToggle();
@@ -47,11 +61,11 @@ export class AppControls {
             this.#autosize(input);
         });
 
-        // 将来のボタン式キーボード表示用（現在は表示状態の切り替えのみ）
-        this.keyboardButton.addEventListener('click', () => {
-            const show = this.keyboardButton.getAttribute('aria-pressed') !== 'true';
-            this.keyboardButton.setAttribute('aria-pressed', String(show));
-            this.callbacks.onKeyboardToggle?.(show);
+        // キーボードボタン：適用／キーボードボタンを隠してキーボードを出す。閉じるで元に戻る
+        this.keyboardButton.addEventListener('click', () => this.setKeyboardVisible(true));
+        this.keyboardClose.addEventListener('click', () => {
+            this.setKeyboardVisible(false);
+            this.keyboardButton.focus({ preventScroll: true });
         });
 
         this.modeToggle.addEventListener('click', () => {
@@ -95,6 +109,18 @@ export class AppControls {
         window.addEventListener('pointerup', () => {
             this.callbacks.onSeekDragEnd();
         });
+    }
+
+    setKeyboardVisible(show) {
+        this.keyboardButton.setAttribute('aria-pressed', String(show));
+        this.actionRow.hidden = show;
+        this.keyboardPanel.hidden = !show;
+        this.inputPage.classList.toggle('kb-open', show);
+        this.rotationKeyboard.setNativeKeyboardEnabled(!show);
+        if (show) {
+            document.activeElement?.blur?.();
+        }
+        this.callbacks.onKeyboardToggle?.(show);
     }
 
     getRequest() {

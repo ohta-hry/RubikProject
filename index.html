@@ -91,11 +91,40 @@
                     <textarea id="moves-input" class="text-input" rows="1" aria-label="回転動作" autocomplete="off" autocapitalize="off" spellcheck="false">R U R' U'</textarea>
 
                     <!-- 適用 : キーボード = 2 : 1 -->
-                    <div class="action-row">
+                    <div id="action-row" class="action-row">
                         <button id="analyze-button" class="analyze-btn" type="button">適用</button>
-                        <button id="keyboard-button" class="keyboard-btn" type="button" aria-pressed="false">
+                        <button id="keyboard-button" class="keyboard-btn" type="button" aria-pressed="false" aria-controls="rotation-keyboard">
                             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg>
                             キーボード
+                        </button>
+                    </div>
+
+                    <!-- 回転動作キーボード（キーボードボタンで 適用／キーボード と入れ替わる） -->
+                    <div id="rotation-keyboard" class="kb" role="group" aria-label="回転動作キーボード" hidden>
+                        <div class="kb-pad">
+                            <svg class="kb-cube" viewBox="-127.5 -127.5 255 255" aria-hidden="true" focusable="false">
+                                <g class="kb-guides">
+                                    <line x1="-45.0" y1="-26.0" x2="-86.6" y2="-50.0"/>
+                                    <line x1="45.0" y1="-26.0" x2="86.6" y2="-50.0"/>
+                                    <line x1="0.0" y1="52.0" x2="0.0" y2="100.0"/>
+                                </g>
+                                <path class="kb-cube-body" d="M-45.0 -26.0 L0.0 -52.0 L45.0 -26.0 L45.0 26.0 L0.0 52.0 L-45.0 26.0Z"/>
+                                <g class="kb-stickers">
+                                    <path class="st-u" d="M0.0 -1.6 L12.3 -8.7 L0.0 -15.8 L-12.3 -8.7Z M15.0 -10.2 L27.3 -17.3 L15.0 -24.4 L2.7 -17.3Z M30.0 -18.9 L42.3 -26.0 L30.0 -33.1 L17.7 -26.0Z M-15.0 -10.2 L-2.7 -17.3 L-15.0 -24.4 L-27.3 -17.3Z M0.0 -18.9 L12.3 -26.0 L0.0 -33.1 L-12.3 -26.0Z M15.0 -27.6 L27.3 -34.7 L15.0 -41.8 L2.7 -34.7Z M-30.0 -18.9 L-17.7 -26.0 L-30.0 -33.1 L-42.3 -26.0Z M-15.0 -27.6 L-2.7 -34.7 L-15.0 -41.8 L-27.3 -34.7Z M0.0 -36.2 L12.3 -43.3 L0.0 -50.4 L-12.3 -43.3Z"/>
+                                    <path class="st-f" d="M-1.4 0.8 L-13.7 -6.3 L-13.7 7.9 L-1.4 15.0Z M-16.4 -7.9 L-28.7 -15.0 L-28.7 -0.8 L-16.4 6.3Z M-31.4 -16.6 L-43.7 -23.7 L-43.7 -9.4 L-31.4 -2.3Z M-1.4 18.1 L-13.7 11.0 L-13.7 25.2 L-1.4 32.3Z M-16.4 9.4 L-28.7 2.3 L-28.7 16.6 L-16.4 23.7Z M-31.4 0.8 L-43.7 -6.3 L-43.7 7.9 L-31.4 15.0Z M-1.4 35.4 L-13.7 28.3 L-13.7 42.6 L-1.4 49.7Z M-16.4 26.8 L-28.7 19.7 L-28.7 33.9 L-16.4 41.0Z M-31.4 18.1 L-43.7 11.0 L-43.7 25.2 L-31.4 32.3Z"/>
+                                    <path class="st-r" d="M1.4 0.8 L13.7 -6.3 L13.7 7.9 L1.4 15.0Z M16.4 -7.9 L28.7 -15.0 L28.7 -0.8 L16.4 6.3Z M31.4 -16.6 L43.7 -23.7 L43.7 -9.4 L31.4 -2.3Z M1.4 18.1 L13.7 11.0 L13.7 25.2 L1.4 32.3Z M16.4 9.4 L28.7 2.3 L28.7 16.6 L16.4 23.7Z M31.4 0.8 L43.7 -6.3 L43.7 7.9 L31.4 15.0Z M1.4 35.4 L13.7 28.3 L13.7 42.6 L1.4 49.7Z M16.4 26.8 L28.7 19.7 L28.7 33.9 L16.4 41.0Z M31.4 18.1 L43.7 11.0 L43.7 25.2 L31.4 32.3Z"/>
+                                </g>
+                            </svg>
+                            <button class="kb-key" type="button" data-move="U" style="--a:-90deg" aria-label="U を入力">U</button>
+                            <button class="kb-key" type="button" data-move="L" style="--a:-150deg" aria-label="L を入力">L</button>
+                            <button class="kb-key" type="button" data-move="B" style="--a:-30deg" aria-label="B を入力">B</button>
+                            <button class="kb-key" type="button" data-move="F" style="--a:150deg" aria-label="F を入力">F</button>
+                            <button class="kb-key" type="button" data-move="R" style="--a:30deg" aria-label="R を入力">R</button>
+                            <button class="kb-key" type="button" data-move="D" style="--a:90deg" aria-label="D を入力">D</button>
+                        </div>
+                        <button id="keyboard-close" class="kb-close" type="button">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                            閉じる
                         </button>
                     </div>
 
