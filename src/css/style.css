@@ -382,18 +382,18 @@ textarea.text-input {
 }
 
 .kb-pad {
-    /* R: 中心からキー列までの基準半径。幅 3.4R × 高さ 2.5R に収まるよう枠から決める */
+    /* R: 中心からキー列までの基準半径。幅 2.7R × 高さ 2.5R に収まるよう枠から決める */
     --R: 80px;
     --k: calc(var(--R) * .55);
     grid-area: 1 / 1;
     place-self: center;
     display: grid;
     place-items: center;
-    width: calc(var(--R) * 3.4);
+    width: calc(var(--R) * 2.7);
     height: calc(var(--R) * 2.5);
 }
 @supports (width: 1cqw) {
-    .kb-pad { --R: min(100cqw / 3.4, 100cqh / 2.5, 120px); }
+    .kb-pad { --R: min(100cqw / 2.7, 100cqh / 2.5, 120px); }
 }
 .kb-pad > * { grid-area: 1 / 1; }
 
@@ -426,19 +426,19 @@ textarea.text-input {
 
 /* ---- 6キー ----
    位置 = 六角形の頂点（角度 --a）に置いてから、横方向に --dx だけずらす。
-   大きさ = 高さは全キー共通、幅は UFRD が LB の約2.4倍。 */
+   大きさ = 高さは全キー共通、幅は UFRD が高さの1.6倍（横長ボタン）、LB は正方形。 */
 .kb-key {
     --kh: calc(var(--k) * .82);     /* 全キー共通の高さ */
-    --kw: calc(var(--k) * 2);       /* UFRD の幅（旧キーの2倍） */
+    --kw: calc(var(--kh) * 1.6);    /* UFRD の幅 */
     --dx: 0px;
     width: var(--kw);
     height: var(--kh);
     display: grid;
     place-items: center;
     padding: 0;
-    font-family: var(--font-gothic);
+    font-family: var(--font-gothic);       /* テキストボックスと同じ書体 */
     font-size: calc(var(--k) * .41);
-    font-weight: 700;
+    font-weight: 500;
     line-height: 1;
     color: var(--text);
     background: var(--surface);
@@ -457,17 +457,15 @@ textarea.text-input {
     box-shadow: 0 0 1px rgba(26, 25, 21, .22);
     background: var(--panel);
 }
-/* L・B：旧キーと同じ大きさ（正方形）、細字 */
+/* L・B：正方形、細字、文字は一回り小さく。位置は六角形の頂点そのまま */
 .kb-key[data-move="L"],
 .kb-key[data-move="B"] {
     --kw: var(--kh);
-    font-weight: 400;
+    font-weight: 300;
 }
-/* 内側の端（キューブ側）の位置は据え置き、外側へ伸ばす。L・B は F・R と横の中心を揃える */
-.kb-key[data-move="F"],
-.kb-key[data-move="L"] { --dx: calc(var(--k) * -.5); }
-.kb-key[data-move="R"],
-.kb-key[data-move="B"] { --dx: calc(var(--k) * .5); }
+/* F・R：キューブ側の端は旧キー（幅 k）の位置に据え置き、横長になった分だけ外側へ伸ばす */
+.kb-key[data-move="F"] { --dx: calc((var(--kw) - var(--k)) / -2); }
+.kb-key[data-move="R"] { --dx: calc((var(--kw) - var(--k)) / 2); }
 
 /* ---- 閉じるボタン（右上の空き隅） ---- */
 .kb-close {
