@@ -438,7 +438,7 @@ textarea.text-input {
     padding: 0;
     font-family: var(--font-gothic);       /* テキストボックスと同じ書体 */
     font-size: calc(var(--k) * .41);
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1;
     color: var(--text);
     background: var(--surface);
@@ -466,6 +466,9 @@ textarea.text-input {
 /* F・R：キューブ側の端は旧キー（幅 k）の位置に据え置き、横長になった分だけ外側へ伸ばす */
 .kb-key[data-move="F"] { --dx: calc((var(--kw) - var(--k)) / -2); }
 .kb-key[data-move="R"] { --dx: calc((var(--kw) - var(--k)) / 2); }
+
+.kb-key[data-move="U"],
+.kb-key[data-move="D"] { --kw: calc(var(--k) * 1.); }
 
 /* ---- 閉じるボタン（右上の空き隅） ---- */
 .kb-close {
