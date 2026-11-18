@@ -351,7 +351,7 @@ textarea.text-input {
    立方体を中心に、6キーを正六角形の頂点（30°刻み）へ極座標で配置する。
    ・キーは「角度」だけを持ち、rotate → translateX(R) → 逆rotate で半径方向へ送り出す
    ・重ね合わせは grid の同一セル（grid-area: 1/1）で行い、position は使わない
-   ・全寸法は --box から導出するので、残り高さに合わせて等比で拡縮する
+   ・全寸法は --R ひとつから導出するので、残り高さに合わせて等比で拡縮する
    ========================================================== */
 :root {
     /* キューブの面色（Constants.js の面色を、紙色の UI に合わせて少し落ち着かせたもの） */
@@ -381,15 +381,28 @@ textarea.text-input {
     animation: kb-in .16s ease-out;
 }
 
+/* ---- 寸法の定義（ここだけ見れば全体のサイズ関係が分かる） ----
+   --R        : 中心からキー列までの基準半径。枠の幅・高さから決める
+   --u        : 中央キューブ SVG の viewBox 1単位（viewBox は R=100 の座標系）
+   --cube-w   : キューブ本体の横幅（viewBox の x: -45〜45 = 90単位）
+   --key-h    : 全キー共通の高さ
+   --key-w-*  : キーごとの幅。UD は「キューブ幅よりほんの少し小さい」 */
 .kb-pad {
-    /* R: 中心からキー列までの基準半径。幅 2.7R × 高さ 2.5R に収まるよう枠から決める */
     --R: 80px;
-    --k: calc(var(--R) * .55);
+    --u: calc(var(--R) / 100);
+    --cube-w: calc(var(--u) * 90);
+
+    --key-h: calc(var(--R) * .45);
+    --key-w-ud: calc(var(--cube-w) * .92);     /* U・D：キューブ幅の92% */
+    --key-w-fr: calc(var(--key-h) * 1.6);      /* F・R：横長 */
+    --key-w-lb: var(--key-h);                  /* L・B：正方形 */
+    --key-edge: calc(var(--R) * .55);          /* F・R のキューブ側の端を揃える基準幅 */
+
     grid-area: 1 / 1;
     place-self: center;
     display: grid;
     place-items: center;
-    width: calc(var(--R) * 2.7);
+    width: calc(var(--R) * 2.7);               /* 幅 2.7R × 高さ 2.5R に収める */
     height: calc(var(--R) * 2.5);
 }
 @supports (width: 1cqw) {
@@ -397,10 +410,10 @@ textarea.text-input {
 }
 .kb-pad > * { grid-area: 1 / 1; }
 
-/* ---- 中央のキューブ（viewBox は R=100 の座標系） ---- */
+/* ---- 中央のキューブ ---- */
 .kb-cube {
-    width: calc(var(--R) * 2.55);
-    height: calc(var(--R) * 2.55);
+    width: calc(var(--u) * 255);               /* viewBox の 255 単位ぶん */
+    height: calc(var(--u) * 255);
     overflow: visible;
     pointer-events: none;
 }
@@ -426,24 +439,26 @@ textarea.text-input {
 
 /* ---- 6キー ----
    位置 = 六角形の頂点（角度 --a）に置いてから、横方向に --dx だけずらす。
-   大きさ = 高さは全キー共通、幅は UFRD が高さの1.6倍（横長ボタン）、LB は正方形。 */
+   幅は --w（キーごとに下で指定）、高さは全キー共通の --key-h。
+   ※ --w に入れる値は calc() の数値に「1.」のような末尾ドットを書かないこと。
+     不正値になると width が無効化され、キーが文字幅まで縮む。 */
 .kb-key {
-    --kh: calc(var(--k) * .82);     /* 全キー共通の高さ */
-    --kw: calc(var(--kh) * 1.6);    /* UFRD の幅 */
+    --w: var(--key-w-lb);
     --dx: 0px;
-    width: var(--kw);
-    height: var(--kh);
+
+    width: var(--w);
+    height: var(--key-h);
     display: grid;
     place-items: center;
     padding: 0;
-    font-family: var(--font-gothic);       /* テキストボックスと同じ書体 */
-    font-size: calc(var(--k) * .41);
+    font-family: var(--font-gothic);           /* テキストボックスと同じ書体 */
+    font-size: calc(var(--key-h) * .5);
     font-weight: 600;
     line-height: 1;
     color: var(--text);
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: calc(var(--kh) * .18);
+    border-radius: calc(var(--key-h) * .18);
     box-shadow: 0 2px 3px rgba(26, 25, 21, .22);
     cursor: pointer;
     touch-action: manipulation;
@@ -457,18 +472,18 @@ textarea.text-input {
     box-shadow: 0 0 1px rgba(26, 25, 21, .22);
     background: var(--panel);
 }
-/* L・B：正方形、細字、文字は一回り小さく。位置は六角形の頂点そのまま */
-.kb-key[data-move="L"],
-.kb-key[data-move="B"] {
-    --kw: var(--kh);
-    font-weight: 300;
-}
-/* F・R：キューブ側の端は旧キー（幅 k）の位置に据え置き、横長になった分だけ外側へ伸ばす */
-.kb-key[data-move="F"] { --dx: calc((var(--kw) - var(--k)) / -2); }
-.kb-key[data-move="R"] { --dx: calc((var(--kw) - var(--k)) / 2); }
 
+/* U・D：キューブの横幅よりほんの少し小さい横長ボタン */
 .kb-key[data-move="U"],
-.kb-key[data-move="D"] { --kw: calc(var(--k) * 1.); }
+.kb-key[data-move="D"] { --w: var(--key-w-ud); }
+
+/* L・B：正方形、細字（幅は既定の --key-w-lb） */
+.kb-key[data-move="L"],
+.kb-key[data-move="B"] { font-weight: 300; }
+
+/* F・R：キューブ側の端は基準幅（--key-edge）の位置に据え置き、横長になった分だけ外側へ伸ばす */
+.kb-key[data-move="F"] { --w: var(--key-w-fr); --dx: calc((var(--w) - var(--key-edge)) / -2); }
+.kb-key[data-move="R"] { --w: var(--key-w-fr); --dx: calc((var(--w) - var(--key-edge)) /  2); }
 
 /* ---- 閉じるボタン（右上の空き隅） ---- */
 .kb-close {
