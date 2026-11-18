@@ -372,13 +372,31 @@ textarea.text-input {
 .page.kb-open > * { flex: none; }
 .page.kb-open > .kb { flex: 1 1 0; }
 
+/* キーボード全体：上段 = キューブ＋6キー（.kb-stage）、下段 = トグル2系統（.kb-modifiers）。
+   上段が残り高さを受け取り、下段は自分の高さだけ使う */
 .kb {
-    min-height: 210px;
+    --kb-stage-min: 210px;
     margin-top: 8px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(var(--kb-stage-min), 1fr) auto;
+    row-gap: 8px;
+    animation: kb-in .16s ease-out;
+}
+
+/* 上段：--R（基準半径）はこの枠のサイズ（cqw / cqh）から決まる */
+.kb-stage {
     display: grid;
     grid-template: minmax(0, 1fr) / minmax(0, 1fr);   /* セルを枠いっぱいに広げる */
     container-type: size;
-    animation: kb-in .16s ease-out;
+}
+
+/* 下段：トグルグループを中央に並べる（幅が足りなければ折り返す） */
+.kb-modifiers {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 14px;
 }
 
 /* ---- 寸法の定義（ここだけ見れば全体のサイズ関係が分かる） ----
@@ -445,6 +463,7 @@ textarea.text-input {
 .kb-key {
     --w: var(--key-w-lb);
     --dx: 0px;
+    --fit: min(1, 2.4 / var(--label-len, 1));   /* ラベルが3文字以上なら文字を縮める（JS が --label-len を設定） */
 
     width: var(--w);
     height: var(--key-h);
@@ -452,7 +471,7 @@ textarea.text-input {
     place-items: center;
     padding: 0;
     font-family: var(--font-gothic);           /* テキストボックスと同じ書体 */
-    font-size: calc(var(--key-h) * .5);
+    font-size: calc(var(--key-h) * .5 * var(--fit));
     font-weight: 600;
     line-height: 1;
     color: var(--text);
@@ -467,10 +486,18 @@ textarea.text-input {
     transform: rotate(var(--a)) translateX(var(--R)) rotate(calc(var(--a) * -1)) translateX(var(--dx));
     transition: translate .05s, box-shadow .05s, background .05s;
 }
-.kb-key:active {
+.kb-key:active:not(:disabled) {
     translate: 0 1px;
     box-shadow: 0 0 1px rgba(26, 25, 21, .22);
     background: var(--panel);
+}
+
+/* 押せないキー（xyz / MES で対応する文字がないキー）：文字なし・影なし・破線の枠だけ残す */
+.kb-key:disabled {
+    background: transparent;
+    border-style: dashed;
+    box-shadow: none;
+    cursor: not-allowed;
 }
 
 /* U・D：キューブの横幅よりほんの少し小さい横長ボタン */
@@ -512,13 +539,53 @@ textarea.text-input {
 }
 .kb-close:active { background: var(--panel); color: var(--text); }
 
+/* ==========================================================
+   Optional Exclusive Toggle Group（OptionalExclusiveToggleGroup.js）
+   横並びの分割ボタン。オンは青の塗り＋内側の影で「押し込まれた」状態を示す。
+   ========================================================== */
+.toggle-group {
+    display: inline-flex;
+    border-radius: 6px;
+    box-shadow: 0 2px 3px rgba(26, 25, 21, .22);
+}
+.toggle-btn {
+    min-width: 52px;
+    height: 40px;
+    padding: 0 12px;
+    font-family: var(--font-gothic);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: background .08s, color .08s, box-shadow .08s;
+}
+.toggle-btn:first-child { border-radius: 6px 0 0 6px; }
+.toggle-btn:last-child  { border-radius: 0 6px 6px 0; }
+.toggle-btn + .toggle-btn { margin-left: -1px; }         /* 境界線を1本にする */
+.toggle-btn:focus-visible { outline-offset: -3px; }
+.toggle-btn:active { background: var(--panel); }
+.toggle-btn[aria-pressed="true"] {
+    position: relative;                                  /* 青い枠線を隣の線より前に出す */
+    color: #fff;
+    background: var(--accent2);
+    border-color: var(--accent2);
+    box-shadow: inset 0 2px 3px rgba(26, 25, 21, .3);
+}
+
 @keyframes kb-in {
     from { opacity: 0; transform: translateY(8px); }
     to   { opacity: 1; transform: none; }
 }
 @media (prefers-reduced-motion: reduce) {
     .kb { animation: none; }
-    .kb-key { transition: none; }
+    .kb-key,
+    .toggle-btn { transition: none; }
 }
 
 /* ==========================================================

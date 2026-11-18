@@ -1,7 +1,14 @@
+import { OptionalExclusiveToggleGroup } from './OptionalExclusiveToggleGroup.js';
+import { resolveKey } from './KeyMapping.js';
+
 /**
- * 回転動作キーボード（U / L / B / F / R / D の6キー）。
+ * 回転動作キーボード（U / L / B / F / R / D の6キー ＋ 修飾トグル）。
  * 押したキーの文字を「最後に選択されたテキストボックス」のカーソル位置へ挿入する。
  * 一度も選択されていない場合は、回転動作欄の末尾へ入力する。
+ *
+ * 下段の2つのトグル（回転量 ' / 2、層・軸 w / xyz / MES）に応じて、
+ * 6キーのラベルと入力内容が変わる。対応表は KeyMapping.js。
+ * 対応するキーがない組み合わせでは、そのキーは文字なし・押せない状態になる。
  */
 export class RotationKeyboard {
     #panel;
@@ -10,6 +17,10 @@ export class RotationKeyboard {
     #isUsable;
     #lastInput;
     #touched = new WeakSet();
+
+    #keys;
+    #turn;    // 回転量トグル（' / 2）
+    #layer;   // 層・軸トグル（w / xyz / MES）
 
     /**
      * @param {object} options
@@ -25,6 +36,12 @@ export class RotationKeyboard {
         this.#isUsable = isUsable;
         this.#lastInput = fallbackInput;
 
+        this.#keys = Array.from(panel.querySelectorAll('.kb-key'));
+        const onToggle = () => this.#refreshKeys();
+        this.#turn = new OptionalExclusiveToggleGroup(panel.querySelector('[data-toggle="turn"]'), onToggle);
+        this.#layer = new OptionalExclusiveToggleGroup(panel.querySelector('[data-toggle="layer"]'), onToggle);
+        this.#refreshKeys();
+
         inputs.forEach(input => {
             input.addEventListener('focus', () => {
                 this.#lastInput = input;
@@ -32,17 +49,17 @@ export class RotationKeyboard {
             });
         });
 
-        // キーを押してもテキストボックスのフォーカス（カーソル）を奪わない
+        // キーやトグルを押してもテキストボックスのフォーカス（カーソル）を奪わない
         panel.addEventListener('mousedown', event => {
-            if (event.target.closest('.kb-key')) {
+            if (event.target.closest('.kb-key, .toggle-btn')) {
                 event.preventDefault();
             }
         });
 
         panel.addEventListener('click', event => {
             const key = event.target.closest('.kb-key');
-            if (key) {
-                this.insert(key.dataset.move);
+            if (key && !key.disabled) {
+                this.insert(resolveKey(key.dataset.move, this.#toggleState()).text);
             }
         });
     }
@@ -73,6 +90,25 @@ export class RotationKeyboard {
         target.dispatchEvent(new Event('input', { bubbles: true }));
         target.focus({ preventScroll: true });
         target.setSelectionRange(target.selectionStart, target.selectionEnd);
+    }
+
+    #toggleState() {
+        return { layer: this.#layer.value, turn: this.#turn.value };
+    }
+
+    /** 現在のトグル状態を6キーの表示（ラベル・押せるか・読み上げ名）へ反映する */
+    #refreshKeys() {
+        const state = this.#toggleState();
+
+        this.#keys.forEach(key => {
+            const base = key.dataset.move;
+            const { text, enabled } = resolveKey(base, state);
+
+            key.disabled = !enabled;
+            key.textContent = text;
+            key.setAttribute('aria-label', enabled ? `${text} を入力` : `${base} は使えません`);
+            key.style.setProperty('--label-len', String(Math.max(text.length, 1)));   // 長いラベルは CSS 側で文字を縮める
+        });
     }
 
     #resolveTarget() {
