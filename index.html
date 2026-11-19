@@ -108,6 +108,7 @@
                     <!-- 回転動作キーボード（キーボードボタンと入れ替わる） -->
                     <div id="rotation-keyboard" class="kb" role="group" aria-label="回転動作キーボード" hidden>
                         <div class="kb-stage">
+                            <div class="kb-pad-area">
                             <div class="kb-pad">
                                 <svg class="kb-cube" viewBox="-127.5 -127.5 255 255" aria-hidden="true" focusable="false">
                                     <g class="kb-guides">
@@ -129,6 +130,25 @@
                                 <button class="kb-key" type="button" data-move="R" style="--a:30deg" aria-label="R を入力">R</button>
                                 <button class="kb-key" type="button" data-move="D" style="--a:90deg" aria-label="D を入力">D</button>
                             </div>
+                            </div>
+
+                            <!-- 右側：編集キー4つ（上から バックスペース / ＜＞ / [ , ] / { , }）。動作は RotationKeyboard.js -->
+                            <div class="kb-side" role="group" aria-label="編集キー">
+                                <button class="kb-side-btn" type="button" data-action="backspace" aria-label="バックスペース">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 5H8.5L2 12l6.5 7H21a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="M12.5 9.5l5 5M17.5 9.5l-5 5"/></svg>
+                                </button>
+                                <div class="kb-side-pair">
+                                    <button class="kb-side-btn" type="button" data-action="left" aria-label="カーソルを左へ">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6l-6 6 6 6"/></svg>
+                                    </button>
+                                    <button class="kb-side-btn" type="button" data-action="right" aria-label="カーソルを右へ">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>
+                                    </button>
+                                </div>
+                                <button class="kb-side-btn kb-side-text" type="button" data-action="bracket" aria-label="[ , ] を入力">[ , ]</button>
+                                <button class="kb-side-btn kb-side-text" type="button" data-action="brace" aria-label="{ , } を入力">{ , }</button>
+                            </div>
+
                             <button id="keyboard-close" class="kb-close" type="button">
                                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
                                 閉じる

@@ -375,7 +375,7 @@ textarea.text-input {
 /* キーボード全体：上段 = キューブ＋6キー（.kb-stage）、下段 = トグル2系統（.kb-modifiers）。
    上段が残り高さを受け取り、下段は自分の高さだけ使う */
 .kb {
-    --kb-stage-min: 210px;
+    --kb-stage-min: 216px;
     margin-top: 8px;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -384,10 +384,21 @@ textarea.text-input {
     animation: kb-in .16s ease-out;
 }
 
-/* 上段：--R（基準半径）はこの枠のサイズ（cqw / cqh）から決まる */
+/* 上段：左 = キューブ＋6キー（.kb-pad-area）、右 = 編集キー4つ（.kb-side）。
+   --R（基準半径）は左の枠（.kb-pad-area）のサイズ（cqw / cqh）から決まるので、
+   右の列の分だけ自動でキューブ＆6キーが小さく・左寄りになる */
 .kb-stage {
     display: grid;
-    grid-template: minmax(0, 1fr) / minmax(0, 1fr);   /* セルを枠いっぱいに広げる */
+    grid-template-columns: minmax(0, 1fr) clamp(76px, 26%, 116px);
+    grid-template-rows: minmax(0, 1fr);
+    column-gap: 8px;
+    min-height: 0;
+}
+.kb-pad-area {
+    grid-area: 1 / 1;
+    min-width: 0;
+    min-height: 0;
+    display: grid;
     container-type: size;
 }
 
@@ -416,7 +427,6 @@ textarea.text-input {
     --key-w-lb: var(--key-h);                  /* L・B：正方形 */
     --key-edge: calc(var(--R) * .55);          /* F・R のキューブ側の端を揃える基準幅 */
 
-    grid-area: 1 / 1;
     place-self: center;
     display: grid;
     place-items: center;
@@ -512,9 +522,64 @@ textarea.text-input {
 .kb-key[data-move="F"] { --w: var(--key-w-fr); --dx: calc((var(--w) - var(--key-edge)) / -2); }
 .kb-key[data-move="R"] { --w: var(--key-w-fr); --dx: calc((var(--w) - var(--key-edge)) /  2); }
 
-/* ---- 閉じるボタン（右上の空き隅） ---- */
+/* ---- 右の編集キー（バックスペース / ＜＞ / [ , ] / { , }）----
+   上の30pxは右上の「閉じる」ボタンの分。残りの高さの中で縦中央に置く */
+.kb-side {
+    --side-h: 40px;
+    grid-area: 1 / 2;
+    align-self: center;
+    margin-top: 30px;
+    display: grid;
+    grid-template-rows: repeat(4, var(--side-h));
+    row-gap: 6px;
+}
+.kb-side-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;     /* 半分の幅ずつ */
+    column-gap: 6px;
+}
+.kb-side-btn {
+    min-width: 0;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    font-family: var(--font-gothic);
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-shadow: 0 2px 3px rgba(26, 25, 21, .22);
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    transition: translate .05s, box-shadow .05s, background .05s;
+}
+.kb-side-btn svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+}
+.kb-side-btn:active {
+    translate: 0 1px;
+    box-shadow: 0 0 1px rgba(26, 25, 21, .22);
+    background: var(--panel);
+}
+
+/* ---- 閉じるボタン（右上の空き隅。2列にまたがる） ---- */
 .kb-close {
-    grid-area: 1 / 1;
+    grid-column: 1 / -1;
+    grid-row: 1;
     place-self: start end;
     display: inline-flex;
     align-items: center;
@@ -585,6 +650,7 @@ textarea.text-input {
 @media (prefers-reduced-motion: reduce) {
     .kb { animation: none; }
     .kb-key,
+    .kb-side-btn,
     .toggle-btn { transition: none; }
 }
 

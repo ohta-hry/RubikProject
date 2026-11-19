@@ -125,7 +125,10 @@ export class AppControls {
         this.inputPage.classList.toggle('kb-open', show);
         this.rotationKeyboard.setNativeKeyboardEnabled(!show);
         if (show) {
+            // ソフトキーボードが出ていたら一度しまい、入力先へフォーカスを戻す（カーソルを見えるままにする）。
+            // inputmode="none" 設定済みなので、フォーカスしても端末のキーボードは出ない
             document.activeElement?.blur?.();
+            this.rotationKeyboard.focusTarget();
         }
         this.callbacks.onKeyboardToggle?.(show);
     }
